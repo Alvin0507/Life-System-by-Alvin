@@ -87,7 +87,7 @@ function SystemInfo({ profile }: { profile: UserProfile | null }) {
       <div className="bg-card border border-border-subtle rounded-xl overflow-hidden divide-y divide-border-subtle">
         {rows.map(({ label, value }) => (
           <div key={label} className="flex items-center justify-between px-4 py-3">
-            <span className="font-display text-[10px] tracking-widest text-ink-secondary uppercase">{label}</span>
+            <span className="font-display text-[12px] tracking-widest text-ink-secondary uppercase">{label}</span>
             <span className="font-mono text-xs text-ink-primary">{value}</span>
           </div>
         ))}
@@ -185,7 +185,7 @@ function ClientSettings() {
         <button
           onClick={() => setAdding(a => !a)}
           className="flex items-center gap-1 px-2.5 py-1 bg-accent-blue/15 text-accent-blue rounded-md
-            border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[9px] tracking-widest"
+            border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[11px] tracking-widest"
         >
           <Plus size={11} /> {adding ? 'Cancel' : 'Add'}
         </button>
@@ -195,7 +195,7 @@ function ClientSettings() {
         <div className="bg-card border border-accent-blue/30 rounded-xl p-4 mb-3 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">Key</p>
+              <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">Key</p>
               <input
                 value={draft.key}
                 onChange={e => setDraft(d => ({ ...d, key: e.target.value }))}
@@ -204,7 +204,7 @@ function ClientSettings() {
               />
             </div>
             <div>
-              <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">Label</p>
+              <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">Label</p>
               <input
                 value={draft.label}
                 onChange={e => setDraft(d => ({ ...d, label: e.target.value }))}
@@ -214,7 +214,7 @@ function ClientSettings() {
             </div>
           </div>
           <div>
-            <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1.5">Color</p>
+            <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1.5">Color</p>
             <div className="flex gap-2">
               {DEFAULT_CLIENT_COLORS.map(c => (
                 <button
@@ -230,7 +230,7 @@ function ClientSettings() {
           <button
             onClick={handleAdd}
             className="w-full px-3 py-2 bg-accent-blue/20 text-accent-blue rounded-lg
-              border border-accent-blue/40 hover:bg-accent-blue/30 transition-all font-display text-[10px] tracking-widest"
+              border border-accent-blue/40 hover:bg-accent-blue/30 transition-all font-display text-[12px] tracking-widest"
           >
             建立客戶
           </button>
@@ -243,7 +243,7 @@ function ClientSettings() {
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border-subtle">
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
               <InlineInput value={c.label} onChange={v => update(c.id, 'label', v)} />
-              <span className="ml-auto text-[10px] font-mono text-ink-muted">{c.key}</span>
+              <span className="ml-auto text-[12px] font-mono text-ink-muted">{c.key}</span>
               <button
                 onClick={() => handleArchive(c.id, c.label)}
                 className="p-1 text-ink-muted hover:text-accent-gold transition-colors"
@@ -259,7 +259,7 @@ function ClientSettings() {
                 { key: 'edit_target',   label: '剪輯月目標', prefix: '',    suffix: '支' },
               ] as const).map(({ key, label, prefix, suffix }) => (
                 <div key={key} className="px-4 py-3">
-                  <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1.5">{label}</p>
+                  <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1.5">{label}</p>
                   <InlineInput
                     value={c[key] as number}
                     onChange={v => update(c.id, key, v)}
@@ -274,7 +274,7 @@ function ClientSettings() {
 
       <button
         onClick={() => setShowArchive(s => !s)}
-        className="mt-3 text-[10px] font-display tracking-widest text-ink-muted hover:text-ink-secondary uppercase"
+        className="mt-3 text-[12px] font-display tracking-widest text-ink-muted hover:text-ink-secondary uppercase"
       >
         {showArchive ? '▾ Hide' : '▸ Show'} Archived ({archived.length || '?'})
       </button>
@@ -282,15 +282,15 @@ function ClientSettings() {
       {showArchive && (
         <div className="mt-2 space-y-2">
           {archived.length === 0 ? (
-            <p className="text-[10px] text-ink-muted font-body px-3 py-2">沒有封存的客戶</p>
+            <p className="text-[12px] text-ink-muted font-body px-3 py-2">沒有封存的客戶</p>
           ) : archived.map(c => (
             <div key={c.id} className="bg-card/50 border border-border-subtle/50 rounded-lg flex items-center gap-3 px-4 py-2.5">
               <div className="w-2 h-2 rounded-full shrink-0 opacity-50" style={{ backgroundColor: c.color }} />
               <span className="font-body text-xs text-ink-muted">{c.label}</span>
-              <span className="text-[10px] font-mono text-ink-muted/60">{c.key}</span>
+              <span className="text-[12px] font-mono text-ink-muted/60">{c.key}</span>
               <button
                 onClick={() => handleRestore(c.id)}
-                className="ml-auto flex items-center gap-1 text-[9px] font-display tracking-widest text-accent-blue hover:text-accent-blue/80 uppercase"
+                className="ml-auto flex items-center gap-1 text-[11px] font-display tracking-widest text-accent-blue hover:text-accent-blue/80 uppercase"
               >
                 <RotateCcw size={10} /> Restore
               </button>
@@ -299,7 +299,7 @@ function ClientSettings() {
         </div>
       )}
 
-      <p className="text-[10px] text-ink-muted mt-2 font-body">點擊欄位直接編輯，Enter 確認，Esc 取消。</p>
+      <p className="text-[12px] text-ink-muted mt-2 font-body">點擊欄位直接編輯，Enter 確認，Esc 取消。</p>
     </section>
   )
 }
@@ -387,7 +387,7 @@ function ModeSettings() {
         <button
           onClick={() => setAdding(a => !a)}
           className="flex items-center gap-1 px-2.5 py-1 bg-accent-blue/15 text-accent-blue rounded-md
-            border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[9px] tracking-widest"
+            border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[11px] tracking-widest"
         >
           <Plus size={11} /> {adding ? 'Cancel' : 'Add'}
         </button>
@@ -397,28 +397,28 @@ function ModeSettings() {
         <div className="bg-card border border-accent-blue/30 rounded-xl p-4 mb-3 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">Key</p>
+              <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">Key</p>
               <input value={draft.key} onChange={e => setDraft(d => ({ ...d, key: e.target.value }))} placeholder="e.g. focus"
                 className="w-full font-mono text-sm bg-elevated border border-border-subtle rounded px-2 py-1.5 text-ink-primary outline-none focus:border-accent-blue" />
             </div>
             <div>
-              <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">Icon</p>
+              <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">Icon</p>
               <input value={draft.icon} onChange={e => setDraft(d => ({ ...d, icon: e.target.value }))} placeholder="✦" maxLength={2}
                 className="w-full font-body text-sm bg-elevated border border-border-subtle rounded px-2 py-1.5 text-ink-primary outline-none focus:border-accent-blue" />
             </div>
           </div>
           <div>
-            <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">Label</p>
+            <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">Label</p>
             <input value={draft.label} onChange={e => setDraft(d => ({ ...d, label: e.target.value }))} placeholder="顯示名稱"
               className="w-full font-body text-sm bg-elevated border border-border-subtle rounded px-2 py-1.5 text-ink-primary outline-none focus:border-accent-blue" />
           </div>
           <div>
-            <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">Subtitle</p>
+            <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">Subtitle</p>
             <input value={draft.subtitle} onChange={e => setDraft(d => ({ ...d, subtitle: e.target.value }))} placeholder="副標題"
               className="w-full font-body text-sm bg-elevated border border-border-subtle rounded px-2 py-1.5 text-ink-primary outline-none focus:border-accent-blue" />
           </div>
           <div>
-            <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1.5">Color</p>
+            <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1.5">Color</p>
             <div className="flex gap-2">
               {MODE_PALETTE.map(c => (
                 <button key={c} onClick={() => setDraft(d => ({ ...d, color: c }))}
@@ -428,7 +428,7 @@ function ModeSettings() {
             </div>
           </div>
           <button onClick={handleAdd}
-            className="w-full px-3 py-2 bg-accent-blue/20 text-accent-blue rounded-lg border border-accent-blue/40 hover:bg-accent-blue/30 transition-all font-display text-[10px] tracking-widest">
+            className="w-full px-3 py-2 bg-accent-blue/20 text-accent-blue rounded-lg border border-accent-blue/40 hover:bg-accent-blue/30 transition-all font-display text-[12px] tracking-widest">
             建立模式
           </button>
         </div>
@@ -440,7 +440,7 @@ function ModeSettings() {
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border-subtle">
               <span className="text-lg shrink-0" style={{ color: m.color }}>{m.icon}</span>
               <InlineInput value={m.label} onChange={v => update(m.id, { label: v })} />
-              <span className="ml-auto text-[10px] font-mono text-ink-muted">{m.key}</span>
+              <span className="ml-auto text-[12px] font-mono text-ink-muted">{m.key}</span>
               {!m.is_default && (
                 <button onClick={() => handleDelete(m.id, m.label, m.is_default)}
                   className="p-1 text-ink-muted hover:text-accent-red transition-colors" title="刪除">
@@ -448,12 +448,12 @@ function ModeSettings() {
                 </button>
               )}
               {m.is_default && (
-                <span className="text-[9px] font-display tracking-widest text-accent-gold/80 uppercase">Default</span>
+                <span className="text-[11px] font-display tracking-widest text-accent-gold/80 uppercase">Default</span>
               )}
             </div>
             <div className="px-4 py-3 space-y-2">
               <div>
-                <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">Subtitle</p>
+                <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">Subtitle</p>
                 <InlineInput value={m.subtitle} onChange={v => update(m.id, { subtitle: v })} />
               </div>
             </div>
@@ -547,7 +547,7 @@ function LearningTopicSettings() {
             placeholder="新主題..."
             className="flex-1 font-body text-sm bg-elevated border border-border-subtle rounded px-2 py-1 text-ink-primary outline-none focus:border-accent-blue" />
           <button onClick={handleAdd}
-            className="flex items-center gap-1 px-2.5 py-1 bg-accent-blue/15 text-accent-blue rounded-md border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[9px] tracking-widest">
+            className="flex items-center gap-1 px-2.5 py-1 bg-accent-blue/15 text-accent-blue rounded-md border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[11px] tracking-widest">
             <Plus size={11} /> Add
           </button>
         </div>
@@ -556,7 +556,7 @@ function LearningTopicSettings() {
       {archivedList.length > 0 && (
         <>
           <button onClick={() => setShowArchived(s => !s)}
-            className="mt-3 text-[10px] font-display tracking-widest text-ink-muted hover:text-ink-secondary uppercase">
+            className="mt-3 text-[12px] font-display tracking-widest text-ink-muted hover:text-ink-secondary uppercase">
             {showArchived ? '▾ Hide' : '▸ Show'} Archived ({archivedList.length})
           </button>
           {showArchived && (
@@ -566,7 +566,7 @@ function LearningTopicSettings() {
                   <span className="text-sm opacity-50">{t.emoji}</span>
                   <span className="font-body text-xs text-ink-muted">{t.label}</span>
                   <button onClick={() => toggleArchive(t.id, t.archived)}
-                    className="ml-auto flex items-center gap-1 text-[9px] font-display tracking-widest text-accent-blue hover:text-accent-blue/80 uppercase">
+                    className="ml-auto flex items-center gap-1 text-[11px] font-display tracking-widest text-accent-blue hover:text-accent-blue/80 uppercase">
                     <RotateCcw size={10} /> Restore
                   </button>
                 </div>
@@ -590,11 +590,11 @@ function Personalization({ profile, onUpdate }: {
       <h2 className="font-display text-sm tracking-[0.2em] text-ink-primary uppercase mb-3">Personalization</h2>
       <div className="bg-card border border-border-subtle rounded-xl overflow-hidden divide-y divide-border-subtle">
         <div className="flex items-center justify-between px-4 py-3">
-          <span className="font-display text-[10px] tracking-widest text-ink-secondary uppercase">顯示名稱</span>
+          <span className="font-display text-[12px] tracking-widest text-ink-secondary uppercase">顯示名稱</span>
           <InlineInput value={profile.display_name} onChange={v => onUpdate('display_name', v)} />
         </div>
         <div className="flex items-center justify-between px-4 py-3">
-          <span className="font-display text-[10px] tracking-widest text-ink-secondary uppercase">每月收入目標</span>
+          <span className="font-display text-[12px] tracking-widest text-ink-secondary uppercase">每月收入目標</span>
           <InlineInput
             value={profile.revenue_goal}
             onChange={v => onUpdate('revenue_goal', Math.max(0, parseInt(v) || 0))}
@@ -645,13 +645,13 @@ function DataManagement() {
       <div className="space-y-3">
         <div className="bg-card border border-accent-blue/20 rounded-xl p-4 flex items-center justify-between gap-4">
           <div>
-            <p className="font-display text-[10px] tracking-widest text-accent-blue uppercase mb-0.5">匯出備份</p>
+            <p className="font-display text-[12px] tracking-widest text-accent-blue uppercase mb-0.5">匯出備份</p>
             <p className="text-xs text-ink-secondary font-body">下載所有 Supabase 上的個人資料為 JSON</p>
           </div>
           <button
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2 bg-accent-blue/15 text-accent-blue rounded-lg
-              border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[10px] tracking-widest shrink-0"
+              border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[12px] tracking-widest shrink-0"
           >
             <Download size={13} /> 匯出
           </button>

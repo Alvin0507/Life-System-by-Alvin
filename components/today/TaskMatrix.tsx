@@ -63,7 +63,7 @@ function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
       </span>
       {task.client && CLIENT_CONFIG[task.client] && (
         <span
-          className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-display tracking-wider"
+          className="shrink-0 px-1.5 py-0.5 rounded text-[11px] font-display tracking-wider"
           style={{
             backgroundColor: `${CLIENT_CONFIG[task.client].color}26`,
             color: CLIENT_CONFIG[task.client].color,
@@ -73,7 +73,7 @@ function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
         </span>
       )}
       {task.target_count && !task.completed && (
-        <span className="shrink-0 text-[9px] font-mono text-ink-muted">×{task.target_count}</span>
+        <span className="shrink-0 text-[11px] font-mono text-ink-muted">×{task.target_count}</span>
       )}
       {showDelete && (
         <button onClick={() => deleteTask(task.id)}
@@ -108,8 +108,8 @@ function ClientColumn() {
   return (
     <div className="bg-card border border-border-subtle rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 border-l-accent-red">
-        <span className="font-display text-[10px] tracking-[0.2em] text-ink-primary uppercase">Client Work</span>
-        <span className="ml-auto text-[10px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
+        <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">Client Work</span>
+        <span className="ml-auto text-[12px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
       </div>
       <div className="px-4 py-2 divide-y divide-border-subtle/50">
         {tasks.map(t => <TaskRow key={t.id} task={t} showDelete />)}
@@ -160,8 +160,8 @@ function SocialColumn() {
   return (
     <div className="bg-card border border-border-subtle rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 border-l-accent-gold">
-        <span className="font-display text-[10px] tracking-[0.2em] text-ink-primary uppercase">Social Ops</span>
-        <span className="ml-auto text-[10px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
+        <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">Social Ops</span>
+        <span className="ml-auto text-[12px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
       </div>
       <div className="px-4 py-2 divide-y divide-border-subtle/50">
         {tasks.map(t => <TaskRow key={t.id} task={t} />)}
@@ -188,8 +188,8 @@ function GrowthColumn() {
   return (
     <div className="bg-card border border-border-subtle rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 border-l-accent-green">
-        <span className="font-display text-[10px] tracking-[0.2em] text-ink-primary uppercase">Growth</span>
-        <span className="ml-auto text-[10px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
+        <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">Growth</span>
+        <span className="ml-auto text-[12px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
       </div>
       <div className="px-4 py-2 divide-y divide-border-subtle/50">
         {tasks.map(t => <TaskRow key={t.id} task={t} showDelete />)}
@@ -225,7 +225,7 @@ export default function TaskMatrix({ combatMode = false }: { combatMode?: boolea
           <motion.span
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
-            className="font-display text-[9px] tracking-widest text-accent-red"
+            className="font-display text-[11px] tracking-widest text-accent-red"
           >
             · CLIENT FOCUS ONLY
           </motion.span>

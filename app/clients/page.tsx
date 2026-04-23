@@ -26,7 +26,7 @@ export default function ClientsPage() {
     <div className="max-w-5xl mx-auto px-4 py-6 md:px-8 space-y-8 pb-24">
       <motion.div {...fadeUp(0)}>
         <div className="mb-4">
-          <p className="font-display text-[10px] tracking-[0.3em] text-ink-muted mb-1">CLIENT COMMAND CENTER</p>
+          <p className="font-display text-[12px] tracking-[0.3em] text-ink-muted mb-1">CLIENT COMMAND CENTER</p>
           <h1 className="font-display text-2xl md:text-3xl text-ink-primary tracking-wider">接案營運中樞</h1>
         </div>
       </motion.div>

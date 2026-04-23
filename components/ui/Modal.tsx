@@ -42,7 +42,7 @@ export default function Modal({ open, onClose, title, children, maxWidth = 'max-
             style={{ boxShadow: '0 0 40px rgba(0,212,255,0.08)' }}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle">
-              <h3 className="font-display text-[11px] tracking-[0.2em] text-ink-primary uppercase">
+              <h3 className="font-display text-[13px] tracking-[0.2em] text-ink-primary uppercase">
                 {title}
               </h3>
               <button onClick={onClose} className="text-ink-muted hover:text-ink-primary transition-colors p-1">

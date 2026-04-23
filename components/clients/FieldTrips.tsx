@@ -115,14 +115,14 @@ export default function FieldTrips() {
                       <span className={`font-mono text-xs ${isToday ? 'text-accent-blue' : isNextFuture ? 'text-accent-gold' : 'text-ink-primary'}`}>
                         {formatTripDate(trip.trip_date)}
                       </span>
-                      <span className="font-display text-[9px] tracking-wider text-ink-secondary uppercase">
+                      <span className="font-display text-[11px] tracking-wider text-ink-secondary uppercase">
                         {cfg.label}
                       </span>
-                      <span className="text-[9px] text-ink-muted font-body">
+                      <span className="text-[11px] text-ink-muted font-body">
                         {trip.duration === 'full' ? '全天' : '半天'}
                       </span>
-                      {isToday && <span className="text-[9px] text-accent-blue font-display tracking-wider">TODAY</span>}
-                      {isNextFuture && <span className="text-[9px] text-accent-gold font-display tracking-wider">NEXT</span>}
+                      {isToday && <span className="text-[11px] text-accent-blue font-display tracking-wider">TODAY</span>}
+                      {isNextFuture && <span className="text-[11px] text-accent-gold font-display tracking-wider">NEXT</span>}
                     </div>
                     {trip.notes && (
                       <p className="text-xs text-ink-muted mt-0.5 truncate font-body">{trip.notes}</p>
@@ -147,7 +147,7 @@ export default function FieldTrips() {
       <Modal open={modal} onClose={() => setModal(false)} title="新增外出行程">
         <div className="space-y-3">
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-ink-secondary mb-1.5 uppercase">日期</label>
+            <label className="block text-[12px] font-display tracking-wider text-ink-secondary mb-1.5 uppercase">日期</label>
             <input
               type="date" value={form.trip_date}
               onChange={e => setForm(f => ({ ...f, trip_date: e.target.value }))}
@@ -155,7 +155,7 @@ export default function FieldTrips() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-ink-secondary mb-1.5 uppercase">客戶</label>
+            <label className="block text-[12px] font-display tracking-wider text-ink-secondary mb-1.5 uppercase">客戶</label>
             <select
               value={form.client}
               onChange={e => setForm(f => ({ ...f, client: e.target.value as ClientName }))}
@@ -167,7 +167,7 @@ export default function FieldTrips() {
             </select>
           </div>
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-ink-secondary mb-1.5 uppercase">時長</label>
+            <label className="block text-[12px] font-display tracking-wider text-ink-secondary mb-1.5 uppercase">時長</label>
             <div className="flex gap-2">
               {(['full', 'half'] as TripDuration[]).map(d => (
                 <button
@@ -184,7 +184,7 @@ export default function FieldTrips() {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-ink-secondary mb-1.5 uppercase">備注</label>
+            <label className="block text-[12px] font-display tracking-wider text-ink-secondary mb-1.5 uppercase">備注</label>
             <input
               value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}

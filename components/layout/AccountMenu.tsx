@@ -30,7 +30,7 @@ export default function AccountMenu() {
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-ink-secondary hover:text-accent-gold hover:bg-elevated transition-colors whitespace-nowrap"
         >
           <Shield size={16} className="shrink-0" />
-          <span className="font-display text-[10px] tracking-[0.18em] overflow-hidden whitespace-nowrap max-w-0 group-hover:max-w-[120px] opacity-0 group-hover:opacity-100 transition-all duration-200">
+          <span className="font-display text-[12px] tracking-[0.18em] overflow-hidden whitespace-nowrap max-w-0 group-hover:max-w-[120px] opacity-0 group-hover:opacity-100 transition-all duration-200">
             ADMIN
           </span>
         </Link>
@@ -42,7 +42,7 @@ export default function AccountMenu() {
           title={email ?? undefined}
         >
           <LogOut size={16} className="shrink-0" />
-          <span className="font-display text-[10px] tracking-[0.18em] overflow-hidden whitespace-nowrap max-w-0 group-hover:max-w-[120px] opacity-0 group-hover:opacity-100 transition-all duration-200">
+          <span className="font-display text-[12px] tracking-[0.18em] overflow-hidden whitespace-nowrap max-w-0 group-hover:max-w-[120px] opacity-0 group-hover:opacity-100 transition-all duration-200">
             SIGN OUT
           </span>
         </button>

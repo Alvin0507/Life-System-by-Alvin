@@ -89,7 +89,7 @@ export default function DeadlineAlert() {
             <div className="bg-elevated border border-border-active rounded-xl p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-display tracking-wider text-ink-secondary mb-1 uppercase">截止日</label>
+                  <label className="block text-[12px] font-display tracking-wider text-ink-secondary mb-1 uppercase">截止日</label>
                   <input
                     type="date" value={form.due_date}
                     onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
@@ -97,7 +97,7 @@ export default function DeadlineAlert() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-display tracking-wider text-ink-secondary mb-1 uppercase">客戶</label>
+                  <label className="block text-[12px] font-display tracking-wider text-ink-secondary mb-1 uppercase">客戶</label>
                   <select
                     value={form.client}
                     onChange={e => setForm(f => ({ ...f, client: e.target.value as ClientName }))}
@@ -108,7 +108,7 @@ export default function DeadlineAlert() {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-display tracking-wider text-ink-secondary mb-1 uppercase">交付物</label>
+                <label className="block text-[12px] font-display tracking-wider text-ink-secondary mb-1 uppercase">交付物</label>
                 <input
                   value={form.deliverable}
                   onChange={e => setForm(f => ({ ...f, deliverable: e.target.value }))}
@@ -183,7 +183,7 @@ export default function DeadlineAlert() {
                         {dl.deliverable}
                       </span>
                       <span
-                        className="text-[9px] font-display tracking-wider px-1.5 py-0.5 rounded"
+                        className="text-[11px] font-display tracking-wider px-1.5 py-0.5 rounded"
                         style={{ backgroundColor: cfg.color + '20', color: cfg.color }}
                       >
                         {cfg.label}
@@ -206,7 +206,7 @@ export default function DeadlineAlert() {
                   {/* Status toggle */}
                   <button
                     onClick={() => cycleStatus(dl.id, dl.status)}
-                    className={`shrink-0 text-[9px] font-display tracking-wider px-2.5 py-1.5 rounded border transition-all ${STATUS_STYLE[dl.status]}`}
+                    className={`shrink-0 text-[11px] font-display tracking-wider px-2.5 py-1.5 rounded border transition-all ${STATUS_STYLE[dl.status]}`}
                   >
                     {STATUS_LABEL[dl.status]}
                   </button>

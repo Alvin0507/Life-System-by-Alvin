@@ -85,13 +85,13 @@ function ClientBlock({ client }: { client: ClientName }) {
       >
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cfg.color }} />
-          <span className="font-display text-[10px] tracking-widest text-ink-primary uppercase">
+          <span className="font-display text-[12px] tracking-widest text-ink-primary uppercase">
             {cfg.label}
           </span>
         </div>
         <div className="flex items-center gap-3">
           {cfg.scriptTarget > 0 && (
-            <span className="font-mono text-[10px] text-ink-muted">
+            <span className="font-mono text-[12px] text-ink-muted">
               {output.script_done + output.edit_done} / {cfg.scriptTarget + cfg.editTarget}
             </span>
           )}
@@ -177,7 +177,7 @@ export default function OutputTracker() {
       <div className="mt-4 flex justify-end">
         <button
           onClick={() => setResetModal(true)}
-          className="flex items-center gap-1.5 text-[10px] text-ink-muted hover:text-accent-red transition-colors font-body"
+          className="flex items-center gap-1.5 text-[12px] text-ink-muted hover:text-accent-red transition-colors font-body"
         >
           <RotateCcw size={11} /> 月底重置
         </button>

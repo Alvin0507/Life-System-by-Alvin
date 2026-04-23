@@ -63,7 +63,7 @@ function FieldOperation() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[{ title: '拍攝前', items: PRE }, { title: '拍攝後', items: POST }].map(group => (
           <div key={group.title}>
-            <p className="font-display text-[9px] tracking-widest text-ink-muted mb-3">{group.title}</p>
+            <p className="font-display text-[11px] tracking-widest text-ink-muted mb-3">{group.title}</p>
             <div className="space-y-2">
               {group.items.map(({ k, label }) => (
                 <button key={k} onClick={() => toggle(k)}
@@ -103,7 +103,7 @@ function CombatBanner() {
       <span className="font-display text-accent-red text-lg">⚔</span>
       <div className="flex-1">
         <p className="font-display text-xs text-accent-red tracking-widest">COMBAT MODE</p>
-        <p className="font-body text-[11px] text-ink-secondary mt-0.5">
+        <p className="font-body text-[13px] text-ink-secondary mt-0.5">
           目前隱藏 SOCIAL / GROWTH / NON-NEG · 只顯示勝利條件和客戶任務
         </p>
       </div>

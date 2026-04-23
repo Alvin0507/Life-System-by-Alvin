@@ -26,7 +26,7 @@ export default function InviteRow({
     <li className="py-3 flex items-center justify-between gap-3">
       <div className="min-w-0">
         <p className="font-body text-sm text-ink-primary truncate">{invite.email}</p>
-        <p className="font-mono text-[10px] text-ink-muted">
+        <p className="font-mono text-[12px] text-ink-muted">
           {new Date(invite.created_at).toLocaleDateString('zh-TW')}
         </p>
       </div>

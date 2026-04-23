@@ -100,7 +100,7 @@ export default function DailyNote() {
             className="overflow-hidden border-b border-border-subtle"
           >
             <div className="px-5 py-4 bg-void/40">
-              <p className="font-display text-[9px] tracking-widest text-ink-muted mb-3">YESTERDAY</p>
+              <p className="font-display text-[11px] tracking-widest text-ink-muted mb-3">YESTERDAY</p>
               {yesterdayNote ? (
                 <div className="space-y-2">
                   {fields.map(f => (
@@ -124,7 +124,7 @@ export default function DailyNote() {
       <div className="divide-y divide-border-subtle">
         {fields.map(f => (
           <div key={f.key} className="px-5 py-4">
-            <p className="font-display text-[10px] tracking-widest text-ink-secondary mb-2 uppercase">
+            <p className="font-display text-[12px] tracking-widest text-ink-secondary mb-2 uppercase">
               {f.emoji} {f.label}
             </p>
             <AutoTextarea

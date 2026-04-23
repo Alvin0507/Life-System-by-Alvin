@@ -156,7 +156,7 @@ export default function OnboardingPage() {
 function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
     <div className="text-center space-y-6">
-      <p className="font-display text-[10px] tracking-[0.3em] text-accent-blue">ALVIN OS · v3</p>
+      <p className="font-display text-[12px] tracking-[0.3em] text-accent-blue">ALVIN OS · v3</p>
       <h1 className="font-display text-3xl md:text-4xl text-ink-primary tracking-wider">
         歡迎進入頂級生活系統
       </h1>
@@ -190,13 +190,13 @@ function ProfileStep({
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-display text-[10px] tracking-[0.3em] text-ink-muted mb-2">STEP 1 / 4</p>
+        <p className="font-display text-[12px] tracking-[0.3em] text-ink-muted mb-2">STEP 1 / 4</p>
         <h2 className="font-display text-2xl text-ink-primary tracking-wider">設定你的身份</h2>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block font-display text-[10px] tracking-widest text-ink-secondary uppercase mb-2">
+          <label className="block font-display text-[12px] tracking-widest text-ink-secondary uppercase mb-2">
             顯示名稱
           </label>
           <input
@@ -210,7 +210,7 @@ function ProfileStep({
         </div>
 
         <div>
-          <label className="block font-display text-[10px] tracking-widest text-ink-secondary uppercase mb-2">
+          <label className="block font-display text-[12px] tracking-widest text-ink-secondary uppercase mb-2">
             每月總收入目標（NT$）
           </label>
           <input
@@ -222,7 +222,7 @@ function ProfileStep({
               text-ink-primary font-mono outline-none focus:border-accent-blue/50 transition-colors
               placeholder:text-ink-muted"
           />
-          <p className="mt-2 text-[10px] text-ink-muted font-body">
+          <p className="mt-2 text-[12px] text-ink-muted font-body">
             之後可以在 Settings 修改，每個客戶的分項目標也在那邊設。
           </p>
         </div>
@@ -243,7 +243,7 @@ function ModesStep({ onNext, onBack }: { onNext: () => void; onBack: () => void 
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-display text-[10px] tracking-[0.3em] text-ink-muted mb-2">STEP 2 / 4</p>
+        <p className="font-display text-[12px] tracking-[0.3em] text-ink-muted mb-2">STEP 2 / 4</p>
         <h2 className="font-display text-2xl text-ink-primary tracking-wider">三種工作模式</h2>
         <p className="mt-2 text-xs text-ink-secondary font-body">
           每天在 Today 頁面切換，UI 會依模式自動簡化。
@@ -284,7 +284,7 @@ function ClientsStep({
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-display text-[10px] tracking-[0.3em] text-ink-muted mb-2">STEP 3 / 4</p>
+        <p className="font-display text-[12px] tracking-[0.3em] text-ink-muted mb-2">STEP 3 / 4</p>
         <h2 className="font-display text-2xl text-ink-primary tracking-wider">接案客戶</h2>
         <p className="mt-2 text-xs text-ink-secondary font-body">
           已預設 4 個客戶。現在可以調整名稱和月目標，或之後在 Settings 改。
@@ -301,7 +301,7 @@ function ClientsStep({
                 onChange={e => update(c.id, { label: e.target.value })}
                 className="flex-1 bg-transparent text-sm text-ink-primary font-body outline-none border-b border-dashed border-ink-muted/20 focus:border-accent-blue/50 transition-colors"
               />
-              <span className="text-[10px] font-mono text-ink-muted">{c.key}</span>
+              <span className="text-[12px] font-mono text-ink-muted">{c.key}</span>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <ClientField label="收入" value={c.revenue} prefix="NT$"
@@ -335,16 +335,16 @@ function ClientField({
 }) {
   return (
     <div>
-      <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">{label}</p>
+      <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">{label}</p>
       <div className="flex items-center gap-1">
-        {prefix && <span className="text-[10px] text-ink-muted">{prefix}</span>}
+        {prefix && <span className="text-[12px] text-ink-muted">{prefix}</span>}
         <input
           type="number"
           value={value || ''}
           onChange={e => onChange(Math.max(0, parseInt(e.target.value) || 0))}
           className="w-full bg-void border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary font-mono outline-none focus:border-accent-blue/50"
         />
-        {suffix && <span className="text-[10px] text-ink-muted">{suffix}</span>}
+        {suffix && <span className="text-[12px] text-ink-muted">{suffix}</span>}
       </div>
     </div>
   )

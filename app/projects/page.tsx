@@ -96,7 +96,7 @@ export default function ProjectsPage() {
         <button
           onClick={() => setCreating(c => !c)}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-blue/15 text-accent-blue rounded-lg
-            border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[10px] tracking-widest"
+            border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[12px] tracking-widest"
         >
           <Plus size={12} /> {creating ? 'Cancel' : 'New Project'}
         </button>
@@ -105,7 +105,7 @@ export default function ProjectsPage() {
       {creating && (
         <motion.div {...fadeUp(0.05)} className="bg-card border border-accent-blue/30 rounded-xl p-4 space-y-3">
           <div>
-            <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">專案名稱</p>
+            <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">專案名稱</p>
             <input
               value={draft.label}
               onChange={e => setDraft(d => ({ ...d, label: e.target.value }))}
@@ -115,7 +115,7 @@ export default function ProjectsPage() {
             />
           </div>
           <div>
-            <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1.5">Color</p>
+            <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1.5">Color</p>
             <div className="flex gap-2">
               {PROJECT_PALETTE.map(c => (
                 <button
@@ -131,7 +131,7 @@ export default function ProjectsPage() {
           <button
             onClick={handleCreate}
             className="w-full px-3 py-2 bg-accent-blue/20 text-accent-blue rounded-lg
-              border border-accent-blue/40 hover:bg-accent-blue/30 transition-all font-display text-[10px] tracking-widest"
+              border border-accent-blue/40 hover:bg-accent-blue/30 transition-all font-display text-[12px] tracking-widest"
           >
             建立專案
           </button>
@@ -279,11 +279,11 @@ function ProjectCard({ project, me, onChanged }: { project: Project; me: string 
         <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: project.color }} />
         <span className="font-display text-sm text-ink-primary tracking-wider">{project.label}</span>
         {isOwner && (
-          <span className="text-[9px] font-display tracking-widest text-accent-gold/80 uppercase px-1.5 py-0.5 rounded bg-accent-gold/10">
+          <span className="text-[11px] font-display tracking-widest text-accent-gold/80 uppercase px-1.5 py-0.5 rounded bg-accent-gold/10">
             Owner
           </span>
         )}
-        <span className="ml-auto flex items-center gap-1.5 text-[10px] font-mono text-ink-muted">
+        <span className="ml-auto flex items-center gap-1.5 text-[12px] font-mono text-ink-muted">
           <Users size={11} /> {memberCount || '—'}
         </span>
         {open ? <ChevronDown size={14} className="text-ink-muted" /> : <ChevronRight size={14} className="text-ink-muted" />}
@@ -295,11 +295,11 @@ function ProjectCard({ project, me, onChanged }: { project: Project; me: string 
           {isOwner && (
             <div className="px-4 py-3 space-y-3">
               <div>
-                <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">Label</p>
+                <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">Label</p>
                 <ProjectInput value={project.label} onChange={v => updateField('label', v)} />
               </div>
               <div>
-                <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1.5">Color</p>
+                <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1.5">Color</p>
                 <div className="flex gap-2">
                   {PROJECT_PALETTE.map(c => (
                     <button
@@ -314,15 +314,15 @@ function ProjectCard({ project, me, onChanged }: { project: Project; me: string 
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">月收入</p>
+                  <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">月收入</p>
                   <ProjectInput value={project.revenue} type="number" prefix="NT$" onChange={v => updateField('revenue', v)} />
                 </div>
                 <div>
-                  <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">腳本目標</p>
+                  <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">腳本目標</p>
                   <ProjectInput value={project.script_target} type="number" suffix="支" onChange={v => updateField('script_target', v)} />
                 </div>
                 <div>
-                  <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-1">剪輯目標</p>
+                  <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-1">剪輯目標</p>
                   <ProjectInput value={project.edit_target} type="number" suffix="支" onChange={v => updateField('edit_target', v)} />
                 </div>
               </div>
@@ -331,11 +331,11 @@ function ProjectCard({ project, me, onChanged }: { project: Project; me: string 
 
           {/* Members */}
           <div className="px-4 py-3">
-            <p className="font-display text-[9px] tracking-wider text-ink-muted uppercase mb-2">Members</p>
+            <p className="font-display text-[11px] tracking-wider text-ink-muted uppercase mb-2">Members</p>
             <div className="space-y-1.5">
               {members.map(m => (
                 <div key={m.user_id} className="flex items-center gap-3 px-3 py-2 bg-elevated/40 rounded-lg">
-                  <div className="w-6 h-6 rounded-full bg-accent-blue/20 flex items-center justify-center text-[10px] font-display text-accent-blue uppercase shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-accent-blue/20 flex items-center justify-center text-[12px] font-display text-accent-blue uppercase shrink-0">
                     {(m.display_name ?? m.email)?.[0] ?? '?'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -343,9 +343,9 @@ function ProjectCard({ project, me, onChanged }: { project: Project; me: string 
                       {m.display_name ?? m.email}
                       {m.user_id === me && <span className="text-ink-muted ml-1">(you)</span>}
                     </p>
-                    <p className="font-mono text-[10px] text-ink-muted truncate">{m.email}</p>
+                    <p className="font-mono text-[12px] text-ink-muted truncate">{m.email}</p>
                   </div>
-                  <span className="text-[9px] font-display tracking-widest text-ink-muted uppercase">{m.role}</span>
+                  <span className="text-[11px] font-display tracking-widest text-ink-muted uppercase">{m.role}</span>
                   {isOwner && m.user_id !== project.owner_id && (
                     <button
                       onClick={() => removeMember(m.user_id)}
@@ -374,7 +374,7 @@ function ProjectCard({ project, me, onChanged }: { project: Project; me: string 
                   onClick={invite}
                   disabled={inviting || !inviteEmail.trim()}
                   className="flex items-center gap-1 px-3 py-1.5 bg-accent-blue/15 text-accent-blue rounded-md
-                    border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[10px] tracking-widest
+                    border border-accent-blue/30 hover:bg-accent-blue/25 transition-all font-display text-[12px] tracking-widest
                     disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <UserPlus size={12} /> Invite
@@ -388,7 +388,7 @@ function ProjectCard({ project, me, onChanged }: { project: Project; me: string 
             {!isOwner && (
               <button
                 onClick={leaveProject}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-ink-muted hover:text-accent-red transition-colors font-display text-[10px] tracking-widest"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-ink-muted hover:text-accent-red transition-colors font-display text-[12px] tracking-widest"
               >
                 <LogOut size={12} /> Leave
               </button>
@@ -396,7 +396,7 @@ function ProjectCard({ project, me, onChanged }: { project: Project; me: string 
             {isOwner && (
               <button
                 onClick={deleteProject}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-accent-red/80 hover:text-accent-red transition-colors font-display text-[10px] tracking-widest"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-accent-red/80 hover:text-accent-red transition-colors font-display text-[12px] tracking-widest"
               >
                 <Trash2 size={12} /> Delete Project
               </button>
@@ -428,7 +428,7 @@ function ProjectInput({
 
   return (
     <div className="flex items-center gap-1.5 bg-elevated border border-border-subtle rounded px-2 py-1.5 focus-within:border-accent-blue">
-      {prefix && <span className="text-[10px] text-ink-muted">{prefix}</span>}
+      {prefix && <span className="text-[12px] text-ink-muted">{prefix}</span>}
       <input
         type={type}
         value={local}
@@ -437,7 +437,7 @@ function ProjectInput({
         onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
         className="flex-1 bg-transparent font-mono text-xs text-ink-primary outline-none min-w-0"
       />
-      {suffix && <span className="text-[10px] text-ink-muted">{suffix}</span>}
+      {suffix && <span className="text-[12px] text-ink-muted">{suffix}</span>}
     </div>
   )
 }

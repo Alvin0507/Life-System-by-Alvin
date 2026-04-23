@@ -83,7 +83,7 @@ export default function ModeSwitch() {
               onMouseEnter={() => setHovered(m.value)}
               onMouseLeave={() => setHovered(null)}
               className={`
-                flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[10px] font-display tracking-widest
+                flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[12px] font-display tracking-widest
                 border transition-all duration-200
                 ${active ? m.activeClass : 'text-ink-muted border-transparent hover:text-ink-secondary hover:bg-elevated/60'}
               `}
@@ -101,7 +101,7 @@ export default function ModeSwitch() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15 }}
-          className="font-body text-[10px] text-ink-secondary text-right max-w-[240px]"
+          className="font-body text-[12px] text-ink-secondary text-right max-w-[240px]"
         >
           {shown.description}
         </motion.p>

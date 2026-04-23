@@ -39,7 +39,7 @@ function ClientCard({ client }: { client: ClientName }) {
 
       <div className="p-4">
         {/* Client label */}
-        <p className="font-display text-[10px] tracking-widest text-ink-secondary uppercase mb-2">
+        <p className="font-display text-[12px] tracking-widest text-ink-secondary uppercase mb-2">
           {cfg.label}
         </p>
 
@@ -61,7 +61,7 @@ function ClientCard({ client }: { client: ClientName }) {
                 key={status}
                 onClick={() => setRevenueStatus(client, status)}
                 className={`
-                  flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[9px] font-display
+                  flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[11px] font-display
                   tracking-wider transition-all duration-150
                   ${active ? `${bg} ${text} border border-current/30` : 'text-ink-muted border border-transparent hover:border-border-subtle'}
                 `}
@@ -118,7 +118,7 @@ export default function RevenueBoard() {
       <div className="bg-card border border-border-subtle rounded-xl p-4">
         <div className="flex items-end justify-between mb-3">
           <div>
-            <p className="font-display text-[9px] tracking-widest text-ink-muted uppercase mb-1">
+            <p className="font-display text-[11px] tracking-widest text-ink-muted uppercase mb-1">
               本月目標 NT$ {TOTAL_REVENUE_GOAL.toLocaleString()}
             </p>
             <p className="font-mono text-2xl text-ink-primary">

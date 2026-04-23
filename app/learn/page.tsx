@@ -167,7 +167,7 @@ function LearningCard({
           rows={2}
           className="w-full bg-transparent text-xs text-ink-primary font-body placeholder:text-ink-muted outline-none resize-none leading-relaxed"
         />
-        <p className="text-[10px] text-ink-muted mt-1 font-body">上次學習：{last}</p>
+        <p className="text-[12px] text-ink-muted mt-1 font-body">上次學習：{last}</p>
       </div>
     </div>
   )
@@ -214,14 +214,14 @@ function InspirationVault({
           />
           <button onClick={add} disabled={!input.trim()}
             className="px-4 py-2 bg-accent-blue/15 text-accent-blue rounded border border-accent-blue/30
-              hover:bg-accent-blue/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-display text-[10px] tracking-wider">
+              hover:bg-accent-blue/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-display text-[12px] tracking-wider">
             <Plus size={14} />
           </button>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {Object.entries(TAG_CONFIG).map(([key, cfg]) => (
             <button key={key} onClick={() => toggleTag(key)}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-body border transition-all
+              className={`px-2.5 py-1 rounded-full text-[12px] font-body border transition-all
                 ${selTags.includes(key) ? 'border-current' : 'border-transparent bg-elevated'}`}
               style={selTags.includes(key) ? { color: cfg.color, backgroundColor: cfg.bg } : undefined}>
               {cfg.label}
@@ -232,7 +232,7 @@ function InspirationVault({
 
       <div className="flex flex-wrap gap-1.5 mb-3">
         <button onClick={() => setFilterTag(null)}
-          className={`px-2.5 py-1 rounded-full text-[10px] font-display tracking-wider border transition-all
+          className={`px-2.5 py-1 rounded-full text-[12px] font-display tracking-wider border transition-all
             ${!filterTag ? 'bg-elevated border-border-active text-ink-primary' : 'border-transparent text-ink-muted hover:border-border-subtle'}`}>
           ALL ({insps.length})
         </button>
@@ -241,7 +241,7 @@ function InspirationVault({
           if (!cnt) return null
           return (
             <button key={key} onClick={() => setFilterTag(filterTag === key ? null : key)}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-body border transition-all`}
+              className={`px-2.5 py-1 rounded-full text-[12px] font-body border transition-all`}
               style={filterTag === key ? { color: cfg.color, backgroundColor: cfg.bg, borderColor: cfg.color + '50' } : { borderColor: 'transparent', color: '#a8a8cc' }}>
               {cfg.label} ({cnt})
             </button>
@@ -266,7 +266,7 @@ function InspirationVault({
                       const cfg = TAG_CONFIG[tag]
                       if (!cfg) return null
                       return (
-                        <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-full font-body"
+                        <span key={tag} className="text-[11px] px-1.5 py-0.5 rounded-full font-body"
                           style={{ color: cfg.color, backgroundColor: cfg.bg }}>
                           {cfg.label.split(' ')[0]}
                         </span>
@@ -274,7 +274,7 @@ function InspirationVault({
                     })}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] text-ink-muted font-mono">{fmtTs(insp.created_at)}</span>
+                    <span className="text-[11px] text-ink-muted font-mono">{fmtTs(insp.created_at)}</span>
                     <button onClick={() => onDelete(insp.id)}
                       className="opacity-0 group-hover/insp:opacity-100 text-ink-muted hover:text-accent-red transition-all">
                       <Trash2 size={11} />

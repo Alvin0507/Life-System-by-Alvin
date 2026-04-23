@@ -21,7 +21,7 @@ export default function Sidebar() {
     <aside className="
       group
       fixed left-0 top-0 h-full z-40
-      w-16 hover:w-52
+      w-[68px] hover:w-56
       transition-[width] duration-200 ease-out
       bg-card border-r border-border-subtle
       flex-col overflow-hidden
@@ -56,22 +56,22 @@ export default function Sidebar() {
               key={path}
               href={path}
               className={`
-                relative flex items-center gap-3 px-3 py-[11px] rounded-lg
-                transition-colors duration-150 whitespace-nowrap
+                relative flex items-center gap-3 px-3 py-[13px] rounded-lg
+                transition-all duration-150 whitespace-nowrap btn-press
                 ${active
-                  ? 'text-accent-blue bg-accent-blue/10'
+                  ? 'text-accent-blue bg-accent-blue/15 shadow-[inset_0_0_0_1px_rgba(0,212,255,0.25)]'
                   : 'text-ink-secondary hover:text-ink-primary hover:bg-elevated'
                 }
               `}
             >
               {active && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-accent-blue rounded-r-full shadow-glow-blue animate-pulse" />
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-accent-blue rounded-r-full shadow-glow-blue animate-pulse" />
               )}
-              <Icon size={17} className="shrink-0" />
+              <Icon size={20} className="shrink-0" strokeWidth={active ? 2.4 : 2} />
               <span className="
-                font-display text-[10px] tracking-[0.18em]
+                font-display text-[12px] tracking-[0.18em] font-semibold
                 overflow-hidden whitespace-nowrap
-                max-w-0 group-hover:max-w-[120px]
+                max-w-0 group-hover:max-w-[140px]
                 opacity-0 group-hover:opacity-100
                 transition-all duration-200 ease-out
               ">

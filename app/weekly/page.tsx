@@ -130,11 +130,11 @@ function DayBox({
         onKeyDown={(e) => { if (!isFuture && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setExp(v => !v) } }}
         className="w-full p-2.5 text-center"
       >
-        <div className="font-display text-[9px] tracking-wider text-ink-muted mb-0.5">{DAY_ABBR[dayIdx]}</div>
+        <div className="font-display text-[11px] tracking-wider text-ink-muted mb-0.5">{DAY_ABBR[dayIdx]}</div>
         <div className={`font-mono text-xl font-bold leading-none mb-1.5 ${isToday ? 'text-accent-blue' : 'text-ink-primary'}`}>
           {d.getDate()}
         </div>
-        {hasTrip && <div className="text-[11px] mb-1">📍</div>}
+        {hasTrip && <div className="text-[13px] mb-1">📍</div>}
         {!isFuture && (
           <button onClick={cycle} className={`text-[8px] font-display tracking-wider px-1 py-0.5 rounded border transition-all ${MODE_STYLE[ctx.mode] ?? MODE_STYLE.normal}`}>
             {MODE_EMOJI[ctx.mode] ?? '⚡'}
@@ -147,7 +147,7 @@ function DayBox({
           <motion.div initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}}
             exit={{height:0,opacity:0}} transition={{duration:0.18}} className="overflow-hidden border-t border-border-subtle">
             <div className="p-2.5 space-y-2">
-              <p className="font-mono text-[10px] text-ink-secondary">✓ {done}/{tasks.length}</p>
+              <p className="font-mono text-[12px] text-ink-secondary">✓ {done}/{tasks.length}</p>
               <textarea value={localNote} onChange={e => onNote(e.target.value)}
                 placeholder="備注..." rows={2}
                 className="w-full bg-void text-xs text-ink-primary font-body placeholder:text-ink-muted outline-none resize-none" />
@@ -185,7 +185,7 @@ function ScriptPacing({ outputs }: { outputs: MonthlyOutput[] }) {
             <div key={client} className="bg-card border border-border-subtle rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cfg.color }} />
-                <span className="font-display text-[10px] tracking-widest text-ink-primary uppercase">{cfg.label}</span>
+                <span className="font-display text-[12px] tracking-widest text-ink-primary uppercase">{cfg.label}</span>
               </div>
               {cfg.scriptTarget > 0 && (
                 <p className="text-xs font-body text-ink-secondary mb-1">
@@ -283,7 +283,7 @@ function WeeklyDebrief({
       <div className="bg-card border border-border-subtle rounded-xl overflow-hidden divide-y divide-border-subtle">
         {FIELDS.map(f => (
           <div key={f.key} className="px-5 py-4">
-            <p className="font-display text-[10px] tracking-widest text-ink-secondary mb-2 uppercase">
+            <p className="font-display text-[12px] tracking-widest text-ink-secondary mb-2 uppercase">
               {f.emoji} {f.label}
             </p>
             {historyWs === weekStart ? (
@@ -348,7 +348,7 @@ function MiniCalendar({ fieldTrips, tasksByDate }: { fieldTrips: FieldTrip[]; ta
                   rate >= 0.8 ? 'bg-accent-green/15' :
                   rate >= 0 ? 'bg-elevated/60' : ''}
               `}>
-                <span className={`font-mono text-[11px] leading-none ${
+                <span className={`font-mono text-[13px] leading-none ${
                   isToday ? 'text-accent-blue font-bold' :
                   isFuture ? 'text-ink-muted' :
                   rate >= 0.8 ? 'text-accent-green' :
@@ -362,11 +362,11 @@ function MiniCalendar({ fieldTrips, tasksByDate }: { fieldTrips: FieldTrip[]; ta
         <div className="flex items-center gap-4 mt-3 flex-wrap">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-sm bg-accent-green/30" />
-            <span className="text-[9px] text-ink-muted font-body">完成率 ≥80%</span>
+            <span className="text-[11px] text-ink-muted font-body">完成率 ≥80%</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-accent-blue" />
-            <span className="text-[9px] text-ink-muted font-body">外出</span>
+            <span className="text-[11px] text-ink-muted font-body">外出</span>
           </div>
         </div>
       </div>
@@ -521,7 +521,7 @@ export default function WeeklyPage() {
               {weekTrips.length > 0 && <span> · 本週外出 <span className="text-accent-gold">{weekTrips.length}</span> 次</span>}
             </p>
           </div>
-          <span className="font-display text-[10px] tracking-[0.2em] text-ink-secondary uppercase">WEEKLY OPS</span>
+          <span className="font-display text-[12px] tracking-[0.2em] text-ink-secondary uppercase">WEEKLY OPS</span>
         </div>
       </motion.div>
 
@@ -542,7 +542,7 @@ export default function WeeklyPage() {
         </div>
         <div className="flex flex-wrap gap-3 mt-3">
           {Object.entries({ '🔥': 'COMBAT', '⚡': 'NORMAL', '📍': 'FIELD', '😴': 'REST' }).map(([emoji, label]) => (
-            <span key={label} className="text-[9px] text-ink-muted font-body">{emoji} {label}</span>
+            <span key={label} className="text-[11px] text-ink-muted font-body">{emoji} {label}</span>
           ))}
         </div>
       </motion.div>

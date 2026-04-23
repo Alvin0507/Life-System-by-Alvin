@@ -38,7 +38,7 @@ export default function ProgressRing() {
             className="absolute bottom-full right-0 mb-3 bg-elevated border border-border-active rounded-xl px-4 py-3 min-w-[200px] shadow-lg"
             style={{ boxShadow: '0 0 20px rgba(0,212,255,0.1)' }}
           >
-            <p className="font-display text-[9px] tracking-widest text-ink-muted mb-2">PROGRESS</p>
+            <p className="font-display text-[11px] tracking-widest text-ink-muted mb-2">PROGRESS</p>
             {[
               { label: 'WIN',     cat: 'win_condition' },
               { label: 'CLIENT',  cat: 'client'        },
@@ -47,8 +47,8 @@ export default function ProgressRing() {
               { label: 'NON-NEG', cat: 'non_neg'       },
             ].map(({ label, cat }) => (
               <div key={cat} className="flex justify-between items-center py-[3px]">
-                <span className="font-display text-[9px] text-ink-secondary tracking-wider">{label}</span>
-                <span className="font-mono text-[11px] text-ink-primary">
+                <span className="font-display text-[11px] text-ink-secondary tracking-wider">{label}</span>
+                <span className="font-mono text-[13px] text-ink-primary">
                   {done(cat)}/{total(cat)}
                 </span>
               </div>

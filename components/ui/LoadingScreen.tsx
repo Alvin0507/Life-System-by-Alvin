@@ -30,7 +30,7 @@ export default function LoadingScreen({ label = 'BOOTING' }: { label?: string })
             A
           </span>
         </div>
-        <span className="font-mono text-[10px] tracking-[0.3em] text-ink-muted animate-pulse">
+        <span className="font-mono text-[12px] tracking-[0.3em] text-ink-muted animate-pulse">
           {label}...
         </span>
       </motion.div>

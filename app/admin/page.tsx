@@ -38,7 +38,7 @@ export default async function AdminPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 md:px-8 pb-24 space-y-8">
       <div>
-        <p className="font-display text-[10px] tracking-[0.3em] text-accent-gold mb-2">
+        <p className="font-display text-[12px] tracking-[0.3em] text-accent-gold mb-2">
           ◆ OWNER CONSOLE
         </p>
         <h1 className="font-display text-3xl text-ink-primary tracking-wider mb-1">
@@ -66,7 +66,7 @@ export default async function AdminPage() {
                 <p className="font-mono text-xs text-ink-muted truncate">{m.email}</p>
               </div>
               <span
-                className={`font-display text-[10px] tracking-widest px-2 py-1 rounded shrink-0 ${
+                className={`font-display text-[12px] tracking-widest px-2 py-1 rounded shrink-0 ${
                   m.role === 'owner'
                     ? 'text-accent-gold bg-accent-gold/10 border border-accent-gold/30'
                     : 'text-ink-secondary bg-elevated border border-border-subtle'

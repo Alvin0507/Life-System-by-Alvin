@@ -53,17 +53,17 @@ export default function TeamStatsWidget() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.4 }}
     >
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-display text-sm tracking-[0.2em] text-ink-primary uppercase flex items-center gap-2">
-          <Users size={13} className="text-accent-blue" />
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-[15px] tracking-[0.2em] text-ink-primary uppercase flex items-center gap-2">
+          <Users size={16} className="text-accent-blue" />
           Team Stats
-          <span className="text-ink-muted text-[9px] tracking-widest">· 7 DAYS</span>
+          <span className="text-ink-muted text-[12px] tracking-widest font-semibold">· 7 DAYS</span>
         </h2>
         <Link
           href="/projects"
-          className="font-display text-[10px] tracking-widest text-ink-muted hover:text-accent-blue transition-colors flex items-center gap-1"
+          className="font-display text-[13px] tracking-widest text-ink-muted hover:text-accent-blue transition-colors flex items-center gap-1 btn-press"
         >
-          ALL <ArrowUpRight size={10} />
+          ALL <ArrowUpRight size={14} />
         </Link>
       </div>
 
@@ -74,54 +74,66 @@ export default function TeamStatsWidget() {
           return (
             <div
               key={p.project_id}
-              className="bg-card border border-border-subtle rounded-xl p-4 card-hover relative overflow-hidden"
+              className="bg-card border border-border-subtle rounded-xl p-5 card-interactive relative overflow-hidden"
             >
               <div
-                className="absolute top-0 left-0 right-0 h-[2px] opacity-60"
+                className="absolute top-0 left-0 right-0 h-[3px] opacity-80"
                 style={{ background: `linear-gradient(90deg, transparent, ${p.project_color}, transparent)` }}
               />
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: p.project_color }}
+                  className="w-3 h-3 rounded-full shrink-0 shadow-sm"
+                  style={{
+                    backgroundColor: p.project_color,
+                    boxShadow: `0 0 10px ${p.project_color}90`,
+                  }}
                 />
-                <span className="font-display text-sm text-ink-primary tracking-wider truncate">
+                <span className="font-display text-[15px] text-ink-primary tracking-wider truncate font-semibold">
                   {p.project_label}
                 </span>
-                <span className="ml-auto font-mono text-[10px] text-ink-muted">
+                <span className="ml-auto font-mono text-[12px] text-ink-secondary">
                   {p.member_count} {p.member_count === 1 ? 'member' : 'members'}
                 </span>
               </div>
 
-              <div className="flex items-baseline gap-1 mb-1">
+              <div className="flex items-baseline gap-2 mb-2">
                 <span
-                  className="font-mono text-3xl font-bold tabular-nums"
-                  style={{ color: p.project_color }}
+                  className="font-mono text-4xl font-bold tabular-nums"
+                  style={{
+                    color: p.project_color,
+                    textShadow: `0 0 16px ${p.project_color}60`,
+                  }}
                 >
                   {p.completed_tasks}
                 </span>
-                <span className="font-mono text-xs text-ink-muted">
-                  / {p.total_tasks} tasks · {rate}%
+                <span className="font-mono text-sm text-ink-secondary">
+                  / {p.total_tasks}
+                </span>
+                <span
+                  className="ml-auto font-mono text-xl font-bold tabular-nums"
+                  style={{ color: p.project_color }}
+                >
+                  {rate}%
                 </span>
               </div>
 
-              <div className="h-1.5 bg-void rounded-full overflow-hidden mt-2 mb-3">
+              <div className="h-2 bg-void rounded-full overflow-hidden mt-2 mb-3 relative">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(100, rate)}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
-                  className="h-full rounded-full"
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  className="h-full rounded-full progress-shimmer"
                   style={{
                     backgroundColor: p.project_color,
-                    boxShadow: `0 0 6px ${p.project_color}60`,
+                    boxShadow: `0 0 10px ${p.project_color}80, inset 0 0 4px rgba(255,255,255,0.3)`,
                   }}
                 />
               </div>
 
               {topMember && topMember.done > 0 ? (
-                <div className="flex items-center gap-2 text-[11px] text-ink-secondary">
-                  <Trophy size={11} className="text-accent-gold shrink-0" />
-                  <span className="font-body truncate">
+                <div className="flex items-center gap-2 text-[13px] text-ink-secondary">
+                  <Trophy size={14} className="text-accent-gold shrink-0 drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]" />
+                  <span className="font-body truncate font-semibold">
                     {topMember.display_name ?? topMember.email}
                   </span>
                   <span className="ml-auto font-mono text-ink-muted">
@@ -129,7 +141,7 @@ export default function TeamStatsWidget() {
                   </span>
                 </div>
               ) : (
-                <p className="text-[11px] text-ink-muted font-body">本週尚無完成任務</p>
+                <p className="text-[13px] text-ink-muted font-body">本週尚無完成任務</p>
               )}
             </div>
           )

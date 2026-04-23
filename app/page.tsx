@@ -117,7 +117,7 @@ function HeroRing({ rate }: { rate: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-[9px] tracking-[0.3em] text-ink-muted mb-1">TODAY</span>
+        <span className="font-display text-[11px] tracking-[0.3em] text-ink-muted mb-1">TODAY</span>
         <span className="font-mono text-5xl font-bold tabular-nums leading-none" style={{ color }}>
           {animated}
         </span>
@@ -148,15 +148,15 @@ function StatCard({
       />
       <div className="flex items-center gap-2 mb-2">
         <Icon size={13} style={{ color: accent }} />
-        <span className="font-display text-[9px] tracking-widest text-ink-secondary uppercase">{label}</span>
+        <span className="font-display text-[11px] tracking-widest text-ink-secondary uppercase">{label}</span>
       </div>
       <div className="flex items-baseline gap-1">
         <span className="font-mono text-3xl font-bold tabular-nums" style={{ color: accent }}>
           {animated}
         </span>
-        {suffix && <span className="font-mono text-[11px] text-ink-muted">{suffix}</span>}
+        {suffix && <span className="font-mono text-[13px] text-ink-muted">{suffix}</span>}
       </div>
-      {subtitle && <p className="font-body text-[10px] text-ink-muted mt-1 truncate">{subtitle}</p>}
+      {subtitle && <p className="font-body text-[12px] text-ink-muted mt-1 truncate">{subtitle}</p>}
     </motion.div>
   )
 }
@@ -195,7 +195,7 @@ function NavTile({
           />
         </div>
         <p className="relative font-display text-sm tracking-widest text-ink-primary mb-1">{label}</p>
-        <p className="relative font-body text-[11px] text-ink-muted">{subtitle}</p>
+        <p className="relative font-body text-[13px] text-ink-muted">{subtitle}</p>
       </Link>
     </motion.div>
   )
@@ -281,7 +281,7 @@ export default function HomePage() {
         </div>
         <Link
           href="/today"
-          className="flex items-center gap-2 px-4 py-2.5 bg-accent-blue/10 text-accent-blue border border-accent-blue/30 rounded-lg font-display text-[10px] tracking-widest hover:bg-accent-blue/20 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 bg-accent-blue/10 text-accent-blue border border-accent-blue/30 rounded-lg font-display text-[12px] tracking-widest hover:bg-accent-blue/20 transition-all group"
           style={{ boxShadow: '0 0 18px rgba(0,212,255,0.15)' }}
         >
           <Zap size={13} className="group-hover:scale-110 transition-transform" />
@@ -307,7 +307,7 @@ export default function HomePage() {
           </div>
           <div className="space-y-4">
             <div>
-              <p className="font-display text-[10px] tracking-[0.3em] text-ink-muted mb-2">MISSION STATUS</p>
+              <p className="font-display text-[12px] tracking-[0.3em] text-ink-muted mb-2">MISSION STATUS</p>
               <p className="font-body text-sm text-ink-primary leading-relaxed">
                 今日 <span className="font-mono text-accent-blue font-bold">{doneCount}</span>
                 <span className="text-ink-muted"> / {tasks.length}</span> 任務完成
@@ -389,8 +389,8 @@ export default function HomePage() {
                     style={{ backgroundColor: cfg.color, boxShadow: received ? `0 0 8px ${cfg.color}` : undefined }}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="font-body text-[11px] text-ink-primary truncate">{cfg.label}</p>
-                    <p className="font-mono text-[10px] text-ink-muted">
+                    <p className="font-body text-[13px] text-ink-primary truncate">{cfg.label}</p>
+                    <p className="font-mono text-[12px] text-ink-muted">
                       {received ? '✓ 已收' : inProg ? '進行中' : '待處理'} · NT${(cfg.revenue / 1000).toFixed(0)}K
                     </p>
                   </div>
@@ -445,7 +445,7 @@ export default function HomePage() {
             </h2>
             <Link
               href="/learn"
-              className="font-display text-[10px] tracking-widest text-ink-muted hover:text-accent-blue transition-colors"
+              className="font-display text-[12px] tracking-widest text-ink-muted hover:text-accent-blue transition-colors"
             >
               ALL →
             </Link>
@@ -459,7 +459,7 @@ export default function HomePage() {
                 <p className="font-body text-sm text-ink-primary leading-relaxed line-clamp-3">
                   {insp.content}
                 </p>
-                <p className="font-mono text-[10px] text-ink-muted mt-2">
+                <p className="font-mono text-[12px] text-ink-muted mt-2">
                   {new Date(insp.created_at).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}
                 </p>
               </div>
