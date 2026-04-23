@@ -14,6 +14,17 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
+    const msg = error.message.toLowerCase()
+    const isPkce = msg.includes('pkce') || msg.includes('code verifier') || msg.includes('code challenge')
+    if (isPkce) {
+      const url = new URL('/login', request.url)
+      url.searchParams.set('retry', '1')
+      const res = NextResponse.redirect(url)
+      for (const c of request.cookies.getAll()) {
+        if (c.name.startsWith('sb-')) res.cookies.delete(c.name)
+      }
+      return res
+    }
     return NextResponse.redirect(
       new URL(`/auth/error?reason=${encodeURIComponent(error.message)}`, request.url)
     )

@@ -9,6 +9,7 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(null)
   const params = useSearchParams()
   const next = params.get('next') || '/'
+  const retry = params.get('retry') === '1'
 
   async function signIn() {
     setLoading(true)
@@ -56,6 +57,12 @@ function LoginContent() {
           </svg>
           {loading ? '跳轉中…' : '使用 Google 登入'}
         </button>
+
+        {retry && !error && (
+          <p className="mt-4 text-[13px] text-accent-gold text-center font-body">
+            登入連結已過期，請再試一次
+          </p>
+        )}
 
         {error && (
           <p className="mt-4 text-sm text-accent-red text-center font-body">
