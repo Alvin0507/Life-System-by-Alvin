@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion, type MotionProps } from 'framer-motion'
-import { Zap, Briefcase, Calendar, Brain, Settings, ArrowUpRight, Flame, Sparkles, Target, Clock } from 'lucide-react'
+import { Zap, Briefcase, Calendar, Brain, Settings, ArrowUpRight, Flame, Sparkles, Target, Clock, Users } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER, TOTAL_REVENUE_GOAL } from '@/stores/useClientStore'
 import { useGreeting } from '@/lib/hooks/useGreeting'
@@ -10,6 +10,7 @@ import { useCountUp } from '@/lib/hooks/useCountUp'
 import { formatDate, getTodayString, getDaysLeftInMonth, getDateSeed } from '@/lib/utils'
 import { dailyQuotes } from '@/lib/quotes'
 import LoadingScreen from '@/components/ui/LoadingScreen'
+import TeamStatsWidget from '@/components/home/TeamStatsWidget'
 import { Inspiration, ClientName } from '@/types'
 import { createClient as createSupabase } from '@/lib/supabase/client'
 
@@ -400,10 +401,13 @@ export default function HomePage() {
         </div>
       </motion.section>
 
+      {/* ── Team Stats (only renders if user belongs to any shared project) ── */}
+      <TeamStatsWidget />
+
       {/* ── Nav Tiles ── */}
       <section>
         <h2 className="font-display text-sm tracking-[0.2em] text-ink-primary uppercase mb-3">Modules</h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <NavTile
             href="/today" icon={Zap} label="TODAY" subtitle="今日作戰"
             accent="#00d4ff" delay={0.32}
@@ -415,6 +419,10 @@ export default function HomePage() {
           <NavTile
             href="/clients" icon={Briefcase} label="CLIENTS" subtitle="接案營運"
             accent="#ff8c42" delay={0.4}
+          />
+          <NavTile
+            href="/projects" icon={Users} label="PROJECTS" subtitle="多人協作"
+            accent="#60a5fa" delay={0.42}
           />
           <NavTile
             href="/learn" icon={Brain} label="LEARN" subtitle="學習積累"

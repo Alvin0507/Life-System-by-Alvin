@@ -724,6 +724,18 @@ export type Database = {
     Functions: {
       is_owner: { Args: Record<string, never>; Returns: boolean }
       is_shared_project_member: { Args: { pid: string }; Returns: boolean }
+      team_stats_weekly: {
+        Args: { days_back?: number }
+        Returns: {
+          completed_tasks: number
+          member_count: number
+          members: Json
+          project_color: string
+          project_id: string
+          project_label: string
+          total_tasks: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
