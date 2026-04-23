@@ -61,6 +61,11 @@ interface ClientStore {
 
   loadAll: () => Promise<void>
 
+  addClient: (init: { key: string; label: string; color: string; revenue: number; script_target: number; edit_target: number }) => Promise<Client | null>
+  archiveClient: (id: string) => Promise<void>
+  restoreClient: (id: string) => Promise<void>
+  listArchivedClients: () => Promise<Client[]>
+
   adjustOutput: (
     client: ClientName,
     field: 'script_done' | 'edit_done' | 'threads_done',
@@ -150,6 +155,54 @@ export const useClientStore = create<ClientStore>((set, get) => ({
       yearMonth: ym,
       loaded: true,
     })
+  },
+
+  addClient: async init => {
+    const supabase = createSupabase()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+    const { clients } = get()
+    const nextOrder = (clients[clients.length - 1]?.sort_order ?? -1) + 1
+    const { data, error } = await supabase
+      .from('clients')
+      .insert({
+        user_id: user.id,
+        key: init.key,
+        label: init.label,
+        color: init.color,
+        revenue: init.revenue,
+        script_target: init.script_target,
+        edit_target: init.edit_target,
+        sort_order: nextOrder,
+        archived: false,
+      })
+      .select()
+      .single()
+    if (error || !data) return null
+    await get().loadAll()
+    return data as Client
+  },
+
+  archiveClient: async id => {
+    const supabase = createSupabase()
+    await supabase.from('clients').update({ archived: true }).eq('id', id)
+    await get().loadAll()
+  },
+
+  restoreClient: async id => {
+    const supabase = createSupabase()
+    await supabase.from('clients').update({ archived: false }).eq('id', id)
+    await get().loadAll()
+  },
+
+  listArchivedClients: async () => {
+    const supabase = createSupabase()
+    const { data } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('archived', true)
+      .order('sort_order')
+    return (data ?? []) as Client[]
   },
 
   adjustOutput: async (clientKey, field, delta) => {
