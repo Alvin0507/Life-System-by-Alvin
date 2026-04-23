@@ -1,14 +1,14 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Zap, Briefcase, Calendar, Brain } from 'lucide-react'
+import { Home, Zap, Briefcase, Users, Calendar } from 'lucide-react'
 
 const navItems = [
   { icon: Home, path: '/', label: 'HOME' },
   { icon: Zap, path: '/today', label: 'TODAY' },
   { icon: Briefcase, path: '/clients', label: 'CLIENTS' },
+  { icon: Users, path: '/projects', label: 'PROJECTS' },
   { icon: Calendar, path: '/weekly', label: 'WEEKLY' },
-  { icon: Brain, path: '/learn', label: 'LEARN' },
 ]
 
 export default function MobileNav() {
