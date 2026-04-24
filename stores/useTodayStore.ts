@@ -81,6 +81,8 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
     const date = getTodayString()
     const yesterday = getYesterdayString()
 
+    await supabase.rpc('rollover_tasks', { p_user_id: user.id, p_today: date })
+
     const storedMode =
       (typeof window !== 'undefined' ? (localStorage.getItem(LS_MODE_KEY) as DayMode) : null) ||
       'normal'

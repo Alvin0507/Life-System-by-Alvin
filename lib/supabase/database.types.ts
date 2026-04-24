@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -612,6 +614,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          carried: boolean
           category: string
           client_id: string | null
           completed: boolean
@@ -627,6 +630,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          carried?: boolean
           category: string
           client_id?: string | null
           completed?: boolean
@@ -642,6 +646,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          carried?: boolean
           category?: string
           client_id?: string | null
           completed?: boolean
@@ -757,6 +762,10 @@ export type Database = {
     Functions: {
       is_owner: { Args: never; Returns: boolean }
       is_shared_project_member: { Args: { pid: string }; Returns: boolean }
+      rollover_tasks: {
+        Args: { p_today: string; p_user_id: string }
+        Returns: number
+      }
       team_stats_weekly: {
         Args: { days_back?: number }
         Returns: {
