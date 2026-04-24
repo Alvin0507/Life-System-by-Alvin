@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Users, ArrowUpRight } from 'lucide-react'
-import { createClient as createSupabase } from '@/lib/supabase/client'
+import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getTodayString } from '@/lib/utils'
 
 interface PersonStat {
@@ -21,7 +21,7 @@ export default function TwoPersonWidget() {
   useEffect(() => {
     (async () => {
       const supabase = createSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getSessionUser()
       if (!user) { setStats([]); return }
 
       const today = getTodayString()

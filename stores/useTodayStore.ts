@@ -2,7 +2,7 @@
 import { create } from 'zustand'
 import { Task, DailyNote, DayMode } from '@/types'
 import { getTodayString } from '@/lib/utils'
-import { createClient as createSupabase } from '@/lib/supabase/client'
+import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getClientIdByKey, getClientKeyById } from './useClientStore'
 
 function getYesterdayString(): string {
@@ -71,9 +71,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
 
   loadToday: async () => {
     const supabase = createSupabase()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) {
       set({ loaded: true })
       return
@@ -176,9 +174,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
 
   addTask: async (task, isShared = false) => {
     const supabase = createSupabase()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const { tasks } = get()
     const sort_order = tasks.length
@@ -224,9 +220,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
 
   updateNote: async (field, value) => {
     const supabase = createSupabase()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
 
     const { note, todayStr } = get()

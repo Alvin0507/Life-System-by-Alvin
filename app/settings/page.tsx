@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, type MotionProps } from 'framer-motion'
 import { Download, ChevronRight, Plus, Archive, RotateCcw, Trash2 } from 'lucide-react'
 import { useClientStore } from '@/stores/useClientStore'
-import { createClient as createSupabase } from '@/lib/supabase/client'
+import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { useAppStore } from '@/stores/useAppStore'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import type { Client } from '@/types'
@@ -349,7 +349,7 @@ function ModeSettings() {
     if (!key || !label) { addToast({ type: 'warning', message: 'Key 與 Label 必填' }); return }
     if (modes.some(m => m.key === key)) { addToast({ type: 'warning', message: '此 Key 已存在' }); return }
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const nextOrder = (modes[modes.length - 1]?.sort_order ?? -1) + 1
     const { error } = await supabase.from('modes').insert({
@@ -494,7 +494,7 @@ function LearningTopicSettings() {
     const label = draftLabel.trim()
     if (!label) return
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const nextOrder = (topics[topics.length - 1]?.sort_order ?? -1) + 1
     const { error } = await supabase.from('learning_topics').insert({
@@ -612,7 +612,7 @@ function DataManagement() {
 
   async function handleExport() {
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
 
     const tables = [
@@ -679,7 +679,7 @@ export default function SettingsPage() {
   useEffect(() => {
     (async () => {
       const supabase = createSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getSessionUser()
       if (!user) { setLoaded(true); return }
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) {
@@ -697,7 +697,7 @@ export default function SettingsPage() {
   async function updateProfile(field: 'display_name' | 'revenue_goal', value: string | number) {
     if (!profile) return
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const updated = { ...profile, [field]: value }
     setProfile(updated)

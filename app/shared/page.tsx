@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Users, Send, Pin, PinOff, Trash2 } from 'lucide-react'
-import { createClient as createSupabase } from '@/lib/supabase/client'
+import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { useAppStore } from '@/stores/useAppStore'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import { Task } from '@/types'
@@ -33,7 +33,7 @@ export default function SharedPage() {
 
   const load = useCallback(async () => {
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) { setLoaded(true); return }
     setMe(user.id)
 

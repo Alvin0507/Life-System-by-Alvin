@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence, type MotionProps } from 'framer-motion'
 import { Lock } from 'lucide-react'
 import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER } from '@/stores/useClientStore'
-import { createClient as createSupabase } from '@/lib/supabase/client'
+import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getWeekStart, getDaysLeftInMonth } from '@/lib/utils'
 import { DayMode, Task, WeeklyReview, FieldTrip, MonthlyOutput } from '@/types'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -399,7 +399,7 @@ export default function WeeklyPage() {
   useEffect(() => {
     (async () => {
       const supabase = createSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getSessionUser()
       if (!user) { setLoaded(true); return }
 
       const cutoff = new Date(today + 'T00:00:00')
@@ -458,7 +458,7 @@ export default function WeeklyPage() {
 
   const updateDay = useCallback(async (date: string, patch: Partial<DayContext>) => {
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const currentCtx = days[date] ?? DEFAULT_CTX
     const updatedCtx = { ...currentCtx, ...patch }
@@ -474,7 +474,7 @@ export default function WeeklyPage() {
   const saveReview = useCallback(async (ws: string, field: keyof WeeklyReview, val: string) => {
     if (field === 'id' || field === 'week_start') return
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const base = reviews[ws] ?? { id: '__pending', week_start: ws, went_well: '', improve: '', next_week_focus: '' }
     const updated = { ...base, [field]: val }

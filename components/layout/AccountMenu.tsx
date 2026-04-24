@@ -2,24 +2,25 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Shield, LogOut } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, getSessionUser } from '@/lib/supabase/client'
 
 export default function AccountMenu() {
   const [role, setRole] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    (async () => {
+      const user = await getSessionUser()
       if (!user) return
       setEmail(user.email ?? null)
+      const supabase = createClient()
       const { data } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .maybeSingle()
       setRole(data?.role ?? null)
-    })
+    })()
   }, [])
 
   return (

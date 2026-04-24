@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, Check } from 'lucide-react'
-import { createClient as createSupabase } from '@/lib/supabase/client'
+import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 
 interface ClientDraft {
@@ -31,7 +31,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     (async () => {
       const supabase = createSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getSessionUser()
       if (!user) { router.replace('/login'); return }
 
       const [profileRes, clientsRes] = await Promise.all([
@@ -66,7 +66,7 @@ export default function OnboardingPage() {
 
   async function saveProfile() {
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     await supabase.from('profiles').update({
       display_name: displayName.trim() || null,
@@ -87,7 +87,7 @@ export default function OnboardingPage() {
   async function complete() {
     setSaving(true)
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) { setSaving(false); return }
 
     await saveProfile()

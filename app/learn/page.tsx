@@ -4,7 +4,7 @@ import { motion, AnimatePresence, type MotionProps } from 'framer-motion'
 import { Plus, Trash2, X } from 'lucide-react'
 import { getWeekStart, getTodayString } from '@/lib/utils'
 import { Inspiration } from '@/types'
-import { createClient as createSupabase } from '@/lib/supabase/client'
+import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 
 /* ── Types ── */
@@ -310,7 +310,7 @@ export default function LearnPage() {
   useEffect(() => {
     (async () => {
       const supabase = createSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getSessionUser()
       if (!user) { setLoaded(true); return }
 
       const cutoff = new Date(today + 'T00:00:00')
@@ -346,7 +346,7 @@ export default function LearnPage() {
   async function addTopic() {
     if (!newLabel.trim() || topics.length >= 6) return
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const sort_order = topics.length
     const { data } = await supabase
@@ -365,7 +365,7 @@ export default function LearnPage() {
 
   async function toggleEntry(topicId: string, checked: boolean) {
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const key = entryKey(today, topicId)
     const existing = entries[key] ?? { date: today, topic_id: topicId, notes: '', checked: false }
@@ -379,7 +379,7 @@ export default function LearnPage() {
 
   async function updateNotes(topicId: string, notes: string) {
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const key = entryKey(today, topicId)
     const existing = entries[key] ?? { date: today, topic_id: topicId, notes: '', checked: false }
@@ -393,7 +393,7 @@ export default function LearnPage() {
 
   async function addInspiration(content: string, tags: string[]) {
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const { data } = await supabase
       .from('inspirations')

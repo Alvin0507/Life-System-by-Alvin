@@ -1,6 +1,6 @@
 'use client'
 import { create } from 'zustand'
-import { createClient as createSupabase } from '@/lib/supabase/client'
+import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import {
   MonthlyOutput,
   FieldTrip,
@@ -159,7 +159,7 @@ export const useClientStore = create<ClientStore>((set, get) => ({
 
   addClient: async init => {
     const supabase = createSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return null
     const { clients } = get()
     const nextOrder = (clients[clients.length - 1]?.sort_order ?? -1) + 1
@@ -219,9 +219,7 @@ export const useClientStore = create<ClientStore>((set, get) => ({
     const client = CLIENTS_BY_KEY[clientKey]
     if (!client) return
     const supabase = createSupabase()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
 
     const payload = {
@@ -260,9 +258,7 @@ export const useClientStore = create<ClientStore>((set, get) => ({
     const client = CLIENTS_BY_KEY[clientKey]
     if (!client) return
     const supabase = createSupabase()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
 
     await supabase.from('monthly_outputs').upsert(
@@ -284,9 +280,7 @@ export const useClientStore = create<ClientStore>((set, get) => ({
   resetMonthlyOutputs: async () => {
     const { clients, yearMonth } = get()
     const supabase = createSupabase()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
 
     await supabase
@@ -311,9 +305,7 @@ export const useClientStore = create<ClientStore>((set, get) => ({
 
   addFieldTrip: async trip => {
     const supabase = createSupabase()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const client_id = getClientIdByKey(trip.client)
     const noteBody = trip.duration === 'half' ? `[half] ${trip.notes}` : trip.notes
@@ -344,9 +336,7 @@ export const useClientStore = create<ClientStore>((set, get) => ({
 
   addDeadline: async deadline => {
     const supabase = createSupabase()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (!user) return
     const client_id = getClientIdByKey(deadline.client)
 
