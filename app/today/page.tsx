@@ -4,6 +4,7 @@ import { motion, AnimatePresence, type MotionProps } from 'framer-motion'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { useClientStore } from '@/stores/useClientStore'
+import { createClient as createSupabase } from '@/lib/supabase/client'
 import { dailyQuotes } from '@/lib/quotes'
 import { formatDate, getDayOfMonth, getDateSeed } from '@/lib/utils'
 import { useGreeting } from '@/lib/hooks/useGreeting'
@@ -129,6 +130,18 @@ export default function TodayPage() {
 
   useEffect(() => { loadToday() }, [loadToday])
   useEffect(() => { if (!clientsLoaded) loadClients() }, [clientsLoaded, loadClients])
+
+  useEffect(() => {
+    const supabase = createSupabase()
+    const channel = supabase
+      .channel('today-shared-realtime')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks', filter: 'is_shared=eq.true' },
+        () => loadToday()
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [loadToday])
 
   useEffect(() => {
     document.body.classList.remove('mode-combat', 'mode-field')

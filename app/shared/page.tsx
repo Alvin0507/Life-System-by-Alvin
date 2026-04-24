@@ -79,6 +79,22 @@ export default function SharedPage() {
 
   useEffect(() => { load() }, [load])
 
+  useEffect(() => {
+    const supabase = createSupabase()
+    const channel = supabase
+      .channel('shared-page-realtime')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks', filter: 'is_shared=eq.true' },
+        () => load()
+      )
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'shared_notes' },
+        () => load()
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [load])
+
   async function toggleTask(id: string, nextDone: boolean) {
     setTasks(ts => ts.map(t => t.id === id ? { ...t, completed: nextDone } : t))
     await createSupabase().from('tasks').update({ completed: nextDone }).eq('id', id)
