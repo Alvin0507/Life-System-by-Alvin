@@ -104,6 +104,10 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 17px;
+}
+
 body {
   background-color: #05050a;
   background-image:
@@ -112,6 +116,18 @@ body {
   color: #f0f0fa;
   font-family: var(--font-body, 'Noto Sans TC', sans-serif);
   overflow-x: hidden;
+}
+
+/* Global legibility bump — scale arbitrary small text sizes up one notch. */
+[class*="text-[10px]"] { font-size: 11px; }
+[class*="text-[11px]"] { font-size: 12px; }
+[class*="text-[12px]"] { font-size: 13px; }
+[class*="text-[13px]"] { font-size: 14px; }
+[class*="text-[14px]"] { font-size: 15px; }
+
+/* Lucide icons — thicker strokes for better visibility against dark UI. */
+svg.lucide {
+  stroke-width: 2.25;
 }
 
 /* Global input focus ring */
