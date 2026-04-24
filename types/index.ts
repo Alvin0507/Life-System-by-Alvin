@@ -27,6 +27,9 @@ export interface Task {
   content: string
   completed: boolean
   target_count?: number
+  is_shared?: boolean
+  user_id?: string
+  owner_name?: string | null
   created_at: string
 }
 

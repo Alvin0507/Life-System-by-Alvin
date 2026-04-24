@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Users } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER } from '@/stores/useClientStore'
@@ -46,7 +46,11 @@ function Checkbox({ done, onToggle }: { done: boolean; onToggle: () => void }) {
 function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
   const toggleTask = useTodayStore(s => s.toggleTask)
   const deleteTask = useTodayStore(s => s.deleteTask)
+  const currentUserId = useTodayStore(s => s.currentUserId)
   const addToast = useAppStore(s => s.addToast)
+
+  const isOthers = task.is_shared && task.user_id && currentUserId && task.user_id !== currentUserId
+  const canDelete = showDelete && !isOthers
 
   function handleToggle() {
     toggleTask(task.id)
@@ -61,6 +65,15 @@ function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
       <span className={`flex-1 text-sm font-body transition-all duration-200 ${task.completed ? 'line-through text-ink-muted' : 'text-ink-primary'}`}>
         {task.content}
       </span>
+      {task.is_shared && (
+        <span
+          className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-display tracking-wider bg-accent-blue/15 text-accent-blue"
+          title={isOthers ? `${task.owner_name ?? '夥伴'} 的共用任務` : '共用'}
+        >
+          <Users size={11} />
+          {isOthers && <span className="text-[10px]">{task.owner_name ?? '夥伴'}</span>}
+        </span>
+      )}
       {task.client && CLIENT_CONFIG[task.client] && (
         <span
           className="shrink-0 px-1.5 py-0.5 rounded text-[11px] font-display tracking-wider"
@@ -75,7 +88,7 @@ function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
       {task.target_count && !task.completed && (
         <span className="shrink-0 text-[11px] font-mono text-ink-muted">×{task.target_count}</span>
       )}
-      {showDelete && (
+      {canDelete && (
         <button onClick={() => deleteTask(task.id)}
           className="opacity-0 group-hover/row:opacity-100 text-ink-muted hover:text-accent-red transition-all"
         >
@@ -96,13 +109,14 @@ function ClientColumn() {
   const [adding, setAdding] = useState(false)
   const [input, setInput] = useState('')
   const [client, setClient] = useState<ClientName>('')
+  const [shared, setShared] = useState(false)
 
   function handleAdd() {
     if (!input.trim()) return
     const chosen = client || CLIENT_ORDER[0]
     if (!chosen) return
-    addTask({ date: todayStr, category: 'client', client: chosen, content: input.trim(), completed: false })
-    setInput(''); setAdding(false)
+    addTask({ date: todayStr, category: 'client', client: chosen, content: input.trim(), completed: false }, shared)
+    setInput(''); setShared(false); setAdding(false)
   }
 
   return (
@@ -134,7 +148,18 @@ function ClientColumn() {
                   className="flex-1 bg-elevated border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary outline-none placeholder:text-ink-muted font-body"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShared(s => !s)}
+                  className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded font-body transition-colors ${
+                    shared
+                      ? 'bg-accent-blue/25 text-accent-blue'
+                      : 'bg-elevated text-ink-muted hover:text-ink-primary'
+                  }`}
+                >
+                  <Users size={12} />
+                  {shared ? '共用' : '個人'}
+                </button>
                 <button onClick={handleAdd} className="text-xs px-3 py-1 bg-accent-blue/15 text-accent-blue rounded hover:bg-accent-blue/25 transition-colors font-body">新增</button>
                 <button onClick={() => setAdding(false)} className="text-xs px-3 py-1 text-ink-muted hover:text-ink-primary transition-colors font-body">取消</button>
               </div>
@@ -178,11 +203,12 @@ function GrowthColumn() {
   const todayStr = useTodayStore(s => s.todayStr)
   const [topic, setTopic] = useState(GROWTH_OPTIONS[0])
   const [goal, setGoal] = useState('')
+  const [shared, setShared] = useState(false)
 
   function handleAdd() {
     if (!goal.trim()) return
-    addTask({ date: todayStr, category: 'growth', content: `${topic}：${goal.trim()}`, completed: false })
-    setGoal('')
+    addTask({ date: todayStr, category: 'growth', content: `${topic}：${goal.trim()}`, completed: false }, shared)
+    setGoal(''); setShared(false)
   }
 
   return (
@@ -205,6 +231,17 @@ function GrowthColumn() {
             placeholder="今日具體目標..."
             className="flex-1 bg-elevated border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary outline-none placeholder:text-ink-muted font-body"
           />
+          <button
+            onClick={() => setShared(s => !s)}
+            className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded font-body transition-colors ${
+              shared
+                ? 'bg-accent-blue/25 text-accent-blue'
+                : 'bg-elevated text-ink-muted hover:text-ink-primary'
+            }`}
+          >
+            <Users size={12} />
+            {shared ? '共用' : '個人'}
+          </button>
           <button onClick={handleAdd}
             className="px-3 py-1 bg-accent-green/15 text-accent-green rounded hover:bg-accent-green/25 transition-colors">
             <Plus size={13} />

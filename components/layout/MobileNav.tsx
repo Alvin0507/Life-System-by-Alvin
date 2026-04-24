@@ -7,7 +7,7 @@ const navItems = [
   { icon: Home, path: '/', label: 'HOME' },
   { icon: Zap, path: '/today', label: 'TODAY' },
   { icon: Briefcase, path: '/clients', label: 'CLIENTS' },
-  { icon: Users, path: '/projects', label: 'PROJECTS' },
+  { icon: Users, path: '/shared', label: 'SHARED' },
   { icon: Calendar, path: '/weekly', label: 'WEEKLY' },
 ]
 

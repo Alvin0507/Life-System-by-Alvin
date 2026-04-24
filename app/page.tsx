@@ -10,7 +10,7 @@ import { useCountUp } from '@/lib/hooks/useCountUp'
 import { formatDate, getTodayString, getDaysLeftInMonth, getDateSeed } from '@/lib/utils'
 import { dailyQuotes } from '@/lib/quotes'
 import LoadingScreen from '@/components/ui/LoadingScreen'
-import TeamStatsWidget from '@/components/home/TeamStatsWidget'
+import TwoPersonWidget from '@/components/home/TwoPersonWidget'
 import { Inspiration, ClientName } from '@/types'
 import { createClient as createSupabase } from '@/lib/supabase/client'
 
@@ -401,8 +401,7 @@ export default function HomePage() {
         </div>
       </motion.section>
 
-      {/* ── Team Stats (only renders if user belongs to any shared project) ── */}
-      <TeamStatsWidget />
+      <TwoPersonWidget />
 
       {/* ── Nav Tiles ── */}
       <section>
@@ -421,7 +420,7 @@ export default function HomePage() {
             accent="#ff8c42" delay={0.4}
           />
           <NavTile
-            href="/projects" icon={Users} label="PROJECTS" subtitle="多人協作"
+            href="/shared" icon={Users} label="SHARED" subtitle="雙人協作"
             accent="#60a5fa" delay={0.42}
           />
           <NavTile
