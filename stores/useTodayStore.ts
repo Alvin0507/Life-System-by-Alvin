@@ -4,6 +4,7 @@ import { Task, DailyNote, DayMode } from '@/types'
 import { getTodayString } from '@/lib/utils'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getClientIdByKey, getClientKeyById } from './useClientStore'
+import { markMyAction } from '@/lib/notifications'
 
 function getYesterdayString(): string {
   const d = new Date()
@@ -178,6 +179,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
     const target = tasks.find(t => t.id === id)
     if (!target) return
     const nextDone = !target.completed
+    markMyAction(id)
     set({ tasks: tasks.map(t => (t.id === id ? { ...t, completed: nextDone } : t)) })
     await createSupabase().from('tasks').update({ completed: nextDone }).eq('id', id)
   },
@@ -214,6 +216,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
       .select()
       .single()
     if (error || !data) return
+    markMyAction(data.id)
 
     const assigneeName =
       data.assigned_to === user.id ? '我'

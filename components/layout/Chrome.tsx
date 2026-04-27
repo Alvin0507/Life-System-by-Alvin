@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation'
 import Sidebar from './Sidebar'
 import MobileNav from './MobileNav'
 import PageTransition from './PageTransition'
+import NotificationBootstrap from './NotificationBootstrap'
 
 const BARE_PATHS = ['/login', '/auth', '/onboarding']
 
@@ -16,6 +17,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <NotificationBootstrap />
       <Sidebar />
       <MobileNav />
       <main className="ml-0 md:ml-16 pb-16 md:pb-0 relative z-10">

@@ -1,7 +1,7 @@
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Users, UserCheck, Send, Pin, PinOff, Trash2 } from 'lucide-react'
+import { Users, UserCheck, Send, Pin, PinOff, Trash2, Bell, BellOff } from 'lucide-react'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { useAppStore } from '@/stores/useAppStore'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -9,6 +9,11 @@ import { Task } from '@/types'
 import { getTodayString } from '@/lib/utils'
 import { getClientKeyById } from '@/stores/useClientStore'
 import { useClientStore, CLIENT_CONFIG } from '@/stores/useClientStore'
+import {
+  ensureNotifyPermission,
+  getNotifyPermission,
+  markMyAction,
+} from '@/lib/notifications'
 
 type AssignFilter = 'all' | 'mine' | 'partner' | 'unassigned'
 
@@ -31,8 +36,20 @@ export default function SharedPage() {
   const [draft, setDraft] = useState('')
   const [posting, setPosting] = useState(false)
   const [filter, setFilter] = useState<AssignFilter>('all')
+  const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('default')
   const clientsLoaded = useClientStore(s => s.loaded)
   const addToast = useAppStore(s => s.addToast)
+
+  useEffect(() => {
+    setPermission(getNotifyPermission())
+  }, [])
+
+  async function handleEnableNotify() {
+    const result = await ensureNotifyPermission()
+    setPermission(result)
+    if (result === 'granted') addToast({ type: 'success', message: '桌面通知已啟用' })
+    else if (result === 'denied') addToast({ type: 'warning', message: '已被瀏覽器封鎖，請至網址列旁的鎖頭手動允許' })
+  }
 
   const load = useCallback(async () => {
     const supabase = createSupabase()
@@ -101,6 +118,7 @@ export default function SharedPage() {
   }, [load])
 
   async function toggleTask(id: string, nextDone: boolean) {
+    markMyAction(id)
     setTasks(ts => ts.map(t => t.id === id ? { ...t, completed: nextDone } : t))
     await createSupabase().from('tasks').update({ completed: nextDone }).eq('id', id)
   }
@@ -117,6 +135,7 @@ export default function SharedPage() {
         .select()
         .single()
       if (error || !data) { addToast({ type: 'warning', message: '發送失敗' }); return }
+      markMyAction(data.id)
       setNotes(ns => [{
         id: data.id,
         author_id: data.author_id,
@@ -167,10 +186,34 @@ export default function SharedPage() {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center gap-3">
           <Users size={22} className="text-accent-blue" />
-          <div>
+          <div className="flex-1">
             <h1 className="font-display text-xl text-ink-primary tracking-wider">Shared Space</h1>
             <p className="font-body text-xs text-ink-secondary mt-1">雙人協作空間 · 共享任務與訊息</p>
           </div>
+          {permission === 'default' && (
+            <button
+              onClick={handleEnableNotify}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-gold/15 text-accent-gold border border-accent-gold/30 rounded-lg text-[12px] font-display tracking-wider hover:bg-accent-gold/25 transition-colors"
+            >
+              <Bell size={13} />
+              啟用通知
+            </button>
+          )}
+          {permission === 'denied' && (
+            <span
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-elevated text-ink-muted border border-border-subtle rounded-lg text-[12px] font-display tracking-wider"
+              title="瀏覽器已封鎖，請至網址列旁的鎖頭手動允許"
+            >
+              <BellOff size={13} />
+              通知已封鎖
+            </span>
+          )}
+          {permission === 'granted' && (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-green/10 text-accent-green/80 border border-accent-green/20 rounded-lg text-[12px] font-display tracking-wider">
+              <Bell size={13} />
+              通知已開啟
+            </span>
+          )}
         </div>
       </motion.div>
 
