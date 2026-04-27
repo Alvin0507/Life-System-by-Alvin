@@ -1,10 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Users, ArrowUpRight } from 'lucide-react'
+import { Users, ArrowUpRight, CheckCircle2, PlusCircle, MessageSquare, UserCheck } from 'lucide-react'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getTodayString } from '@/lib/utils'
+
+type ActivityKind = 'task_completed' | 'task_created' | 'task_assigned' | 'note_posted'
 
 interface PersonStat {
   user_id: string
@@ -12,64 +14,97 @@ interface PersonStat {
   total: number
   done: number
   is_me: boolean
+  last_activity_at: string | null
+  last_activity_kind: ActivityKind | null
+  last_activity_summary: string | null
 }
+
+const ACTIVE_THRESHOLD_MS = 5 * 60 * 1000
 
 export default function TwoPersonWidget() {
   const [stats, setStats] = useState<PersonStat[] | null>(null)
   const [unread, setUnread] = useState(0)
 
-  useEffect(() => {
-    (async () => {
-      const supabase = createSupabase()
-      const user = await getSessionUser()
-      if (!user) { setStats([]); return }
+  const load = useCallback(async () => {
+    const supabase = createSupabase()
+    const user = await getSessionUser()
+    if (!user) { setStats([]); return }
 
-      const today = getTodayString()
-      const [tasksRes, profilesRes, notesRes] = await Promise.all([
-        supabase.from('tasks').select('user_id, completed').eq('is_shared', true).eq('date', today),
-        supabase.from('profiles').select('id, display_name, email'),
-        supabase
-          .from('shared_notes')
-          .select('id', { count: 'exact', head: true })
-          .neq('author_id', user.id)
-          .gte('created_at', new Date(Date.now() - 24 * 3600 * 1000).toISOString()),
-      ])
+    const today = getTodayString()
+    const dayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
 
-      if (!tasksRes.data || tasksRes.data.length === 0) {
-        setStats([])
-        setUnread(notesRes.count ?? 0)
-        return
+    const [tasksRes, profilesRes, notesRes, activityRes] = await Promise.all([
+      supabase.from('tasks').select('user_id, completed').eq('is_shared', true).eq('date', today),
+      supabase.from('profiles').select('id, display_name, email'),
+      supabase
+        .from('shared_notes')
+        .select('id', { count: 'exact', head: true })
+        .neq('author_id', user.id)
+        .gte('created_at', dayAgo),
+      supabase
+        .from('activity_log')
+        .select('actor_id, kind, summary, created_at')
+        .order('created_at', { ascending: false })
+        .limit(20),
+    ])
+
+    const profiles = (profilesRes.data ?? [])
+    if (profiles.length === 0) { setStats([]); setUnread(notesRes.count ?? 0); return }
+
+    const taskMap = new Map<string, { total: number; done: number }>()
+    for (const t of tasksRes.data ?? []) {
+      if (!t.user_id) continue
+      const cur = taskMap.get(t.user_id) ?? { total: 0, done: 0 }
+      cur.total++
+      if (t.completed) cur.done++
+      taskMap.set(t.user_id, cur)
+    }
+
+    const lastByActor = new Map<string, { kind: ActivityKind; summary: string; created_at: string }>()
+    for (const a of activityRes.data ?? []) {
+      if (!lastByActor.has(a.actor_id)) {
+        lastByActor.set(a.actor_id, {
+          kind: a.kind as ActivityKind,
+          summary: a.summary,
+          created_at: a.created_at,
+        })
       }
+    }
 
-      const pMap = new Map<string, string>()
-      for (const p of profilesRes.data ?? []) {
-        pMap.set(p.id, p.display_name || p.email?.split('@')[0] || '夥伴')
+    const rows: PersonStat[] = profiles.map(p => {
+      const t = taskMap.get(p.id) ?? { total: 0, done: 0 }
+      const a = lastByActor.get(p.id) ?? null
+      return {
+        user_id: p.id,
+        name: p.id === user.id ? '我' : (p.display_name || p.email?.split('@')[0] || '夥伴'),
+        total: t.total,
+        done: t.done,
+        is_me: p.id === user.id,
+        last_activity_at: a?.created_at ?? null,
+        last_activity_kind: a?.kind ?? null,
+        last_activity_summary: a?.summary ?? null,
       }
+    }).sort((a, b) => (a.is_me === b.is_me ? 0 : a.is_me ? -1 : 1))
 
-      const grouped = new Map<string, { total: number; done: number }>()
-      for (const t of tasksRes.data) {
-        if (!t.user_id) continue
-        const cur = grouped.get(t.user_id) ?? { total: 0, done: 0 }
-        cur.total++
-        if (t.completed) cur.done++
-        grouped.set(t.user_id, cur)
-      }
-
-      const rows: PersonStat[] = Array.from(grouped.entries()).map(([uid, v]) => ({
-        user_id: uid,
-        name: uid === user.id ? '我' : (pMap.get(uid) ?? '夥伴'),
-        total: v.total,
-        done: v.done,
-        is_me: uid === user.id,
-      })).sort((a, b) => (a.is_me ? -1 : 1) - (b.is_me ? -1 : 1))
-
-      setStats(rows)
-      setUnread(notesRes.count ?? 0)
-    })()
+    setStats(rows)
+    setUnread(notesRes.count ?? 0)
   }, [])
 
+  useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    const supabase = createSupabase()
+    const channel = supabase
+      .channel('two-person-widget')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_log' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: 'is_shared=eq.true' }, () => load())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'shared_notes' }, () => load())
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [load])
+
   if (stats === null) return null
-  if (stats.length === 0 && unread === 0) return null
+  if (stats.length === 0) return null
 
   return (
     <motion.section
@@ -91,44 +126,59 @@ export default function TwoPersonWidget() {
       </div>
 
       <div className="bg-card border border-border-subtle rounded-xl p-5 card-interactive">
-        {stats.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {stats.map(s => {
-              const rate = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0
-              const color = s.is_me ? '#00d4ff' : '#ffd700'
-              return (
-                <div key={s.user_id} className="space-y-2">
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-display text-sm tracking-wider text-ink-primary font-semibold">
-                      {s.name}
-                    </span>
-                    <span
-                      className="ml-auto font-mono text-3xl font-bold tabular-nums"
-                      style={{ color, textShadow: `0 0 14px ${color}60` }}
-                    >
-                      {s.done}
-                    </span>
-                    <span className="font-mono text-sm text-ink-secondary">/ {s.total}</span>
-                  </div>
-                  <div className="h-2 bg-void rounded-full overflow-hidden relative">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, rate)}%` }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                      className="h-full rounded-full progress-shimmer"
-                      style={{
-                        backgroundColor: color,
-                        boxShadow: `0 0 10px ${color}80, inset 0 0 4px rgba(255,255,255,0.3)`,
-                      }}
-                    />
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {stats.map(s => {
+            const rate = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0
+            const color = s.is_me ? '#00d4ff' : '#ffd700'
+            const isActive = s.last_activity_at
+              ? Date.now() - new Date(s.last_activity_at).getTime() < ACTIVE_THRESHOLD_MS
+              : false
+            return (
+              <div key={s.user_id} className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display text-sm tracking-wider text-ink-primary font-semibold flex items-center gap-1.5">
+                    {s.name}
+                    {isActive && (
+                      <span
+                        className="w-1.5 h-1.5 rounded-full animate-pulse"
+                        style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }}
+                        title="剛剛活動過"
+                      />
+                    )}
+                  </span>
+                  <span
+                    className="ml-auto font-mono text-3xl font-bold tabular-nums"
+                    style={{ color, textShadow: `0 0 14px ${color}60` }}
+                  >
+                    {s.done}
+                  </span>
+                  <span className="font-mono text-sm text-ink-secondary">/ {s.total}</span>
                 </div>
-              )
-            })}
-          </div>
-        ) : (
-          <p className="font-body text-xs text-ink-muted text-center py-2">今日還沒有共用任務</p>
-        )}
+                <div className="h-2 bg-void rounded-full overflow-hidden relative">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, rate)}%` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                    className="h-full rounded-full progress-shimmer"
+                    style={{
+                      backgroundColor: color,
+                      boxShadow: `0 0 10px ${color}80, inset 0 0 4px rgba(255,255,255,0.3)`,
+                    }}
+                  />
+                </div>
+                {s.last_activity_at && (
+                  <div className="flex items-center gap-1.5 text-[11px] font-body text-ink-muted">
+                    <ActionIcon kind={s.last_activity_kind} />
+                    <span className="truncate flex-1" title={s.last_activity_summary ?? ''}>
+                      {actionVerb(s.last_activity_kind)} · {s.last_activity_summary || '—'}
+                    </span>
+                    <span className="font-mono shrink-0">{formatRelative(s.last_activity_at)}</span>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
 
         {unread > 0 && (
           <div className="mt-4 pt-4 border-t border-border-subtle flex items-center gap-2">
@@ -141,4 +191,29 @@ export default function TwoPersonWidget() {
       </div>
     </motion.section>
   )
+}
+
+function ActionIcon({ kind }: { kind: ActivityKind | null }) {
+  if (kind === 'task_completed') return <CheckCircle2 size={11} className="text-accent-green shrink-0" />
+  if (kind === 'task_assigned') return <UserCheck size={11} className="text-accent-gold shrink-0" />
+  if (kind === 'note_posted') return <MessageSquare size={11} className="text-accent-blue shrink-0" />
+  return <PlusCircle size={11} className="text-ink-muted shrink-0" />
+}
+
+function actionVerb(kind: ActivityKind | null): string {
+  switch (kind) {
+    case 'task_completed': return '完成'
+    case 'task_created': return '新增'
+    case 'task_assigned': return '指派'
+    case 'note_posted': return '留言'
+    default: return ''
+  }
+}
+
+function formatRelative(iso: string): string {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+  if (diff < 60) return '剛剛'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`
+  return `${Math.floor(diff / 86400)}d`
 }
