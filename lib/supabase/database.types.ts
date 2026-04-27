@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          kind: string
+          ref_id: string | null
+          summary: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          ref_id?: string | null
+          summary?: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          ref_id?: string | null
+          summary?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           archived: boolean

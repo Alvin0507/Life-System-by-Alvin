@@ -1,7 +1,10 @@
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Users, UserCheck, Send, Pin, PinOff, Trash2, Bell, BellOff } from 'lucide-react'
+import {
+  Users, UserCheck, Send, Pin, PinOff, Trash2, Bell, BellOff,
+  CheckCircle2, PlusCircle, MessageSquare, Activity,
+} from 'lucide-react'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { useAppStore } from '@/stores/useAppStore'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -16,6 +19,7 @@ import {
 } from '@/lib/notifications'
 
 type AssignFilter = 'all' | 'mine' | 'partner' | 'unassigned'
+type ActivityKind = 'task_completed' | 'task_created' | 'task_assigned' | 'note_posted'
 
 interface SharedNote {
   id: string
@@ -27,11 +31,21 @@ interface SharedNote {
   author_name: string
 }
 
+interface ActivityEntry {
+  id: string
+  actor_id: string
+  actor_name: string
+  kind: ActivityKind
+  summary: string
+  created_at: string
+}
+
 export default function SharedPage() {
   const [me, setMe] = useState<string | null>(null)
   const [profiles, setProfiles] = useState<Map<string, string>>(new Map())
   const [tasks, setTasks] = useState<Task[]>([])
   const [notes, setNotes] = useState<SharedNote[]>([])
+  const [activity, setActivity] = useState<ActivityEntry[]>([])
   const [loaded, setLoaded] = useState(false)
   const [draft, setDraft] = useState('')
   const [posting, setPosting] = useState(false)
@@ -58,10 +72,11 @@ export default function SharedPage() {
     setMe(user.id)
 
     const today = getTodayString()
-    const [tasksRes, notesRes, profilesRes] = await Promise.all([
+    const [tasksRes, notesRes, profilesRes, activityRes] = await Promise.all([
       supabase.from('tasks').select('*').eq('is_shared', true).eq('date', today).order('created_at'),
       supabase.from('shared_notes').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false }).limit(50),
       supabase.from('profiles').select('id, display_name, email'),
+      supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(50),
     ])
 
     const pMap = new Map<string, string>()
@@ -69,6 +84,15 @@ export default function SharedPage() {
       pMap.set(p.id, p.display_name || p.email?.split('@')[0] || '夥伴')
     }
     setProfiles(pMap)
+
+    setActivity((activityRes.data ?? []).map(a => ({
+      id: a.id,
+      actor_id: a.actor_id,
+      actor_name: pMap.get(a.actor_id) ?? '夥伴',
+      kind: a.kind as ActivityKind,
+      summary: a.summary,
+      created_at: a.created_at,
+    })))
 
     setTasks((tasksRes.data ?? []).map(t => ({
       id: t.id,
@@ -111,6 +135,10 @@ export default function SharedPage() {
       )
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'shared_notes' },
+        () => load()
+      )
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'activity_log' },
         () => load()
       )
       .subscribe()
@@ -386,8 +414,74 @@ export default function SharedPage() {
           </div>
         )}
       </motion.section>
+
+      {/* Activity timeline */}
+      <motion.section
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.4 }}
+        className="bg-card border border-border-subtle rounded-xl overflow-hidden"
+      >
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 border-l-accent-green">
+          <Activity size={14} className="text-accent-green" />
+          <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">Activity</span>
+          <span className="ml-auto text-[12px] font-mono text-ink-muted">{activity.length}</span>
+        </div>
+        {activity.length === 0 ? (
+          <div className="px-4 py-8 text-center">
+            <p className="font-body text-xs text-ink-muted">還沒有任何活動</p>
+            <p className="font-body text-[11px] text-ink-muted mt-1">完成共用任務或留言後會在這裡顯示</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border-subtle/50 max-h-[420px] overflow-y-auto">
+            {activity.map(a => {
+              const isMine = a.actor_id === me
+              return (
+                <div key={a.id} className="px-4 py-2.5 flex items-start gap-3">
+                  <ActivityIcon kind={a.kind} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`font-display text-[11px] tracking-wider ${isMine ? 'text-accent-blue' : 'text-accent-gold'}`}>
+                        {isMine ? '我' : a.actor_name}
+                      </span>
+                      <span className="font-body text-[11px] text-ink-muted">{actionLabel(a.kind)}</span>
+                      <span className="font-mono text-[11px] text-ink-muted ml-auto">{formatRelativeTime(a.created_at)}</span>
+                    </div>
+                    <p className="font-body text-xs text-ink-secondary mt-0.5 truncate" title={a.summary}>
+                      {a.summary}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </motion.section>
     </div>
   )
+}
+
+function ActivityIcon({ kind }: { kind: ActivityKind }) {
+  const cls = 'shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5'
+  if (kind === 'task_completed') {
+    return <div className={`${cls} bg-accent-green/15 text-accent-green`}><CheckCircle2 size={14} /></div>
+  }
+  if (kind === 'task_assigned') {
+    return <div className={`${cls} bg-accent-gold/15 text-accent-gold`}><UserCheck size={14} /></div>
+  }
+  if (kind === 'note_posted') {
+    return <div className={`${cls} bg-accent-blue/15 text-accent-blue`}><MessageSquare size={14} /></div>
+  }
+  return <div className={`${cls} bg-elevated text-ink-secondary`}><PlusCircle size={14} /></div>
+}
+
+function actionLabel(kind: ActivityKind): string {
+  switch (kind) {
+    case 'task_completed': return '完成了任務'
+    case 'task_created': return '新增了共用任務'
+    case 'task_assigned': return '指派了任務'
+    case 'note_posted': return '發了訊息'
+  }
 }
 
 function formatRelativeTime(iso: string): string {
