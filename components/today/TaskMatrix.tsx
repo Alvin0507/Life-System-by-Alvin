@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Users } from 'lucide-react'
+import { Plus, Trash2, Users, UserCheck } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER } from '@/stores/useClientStore'
@@ -59,16 +59,30 @@ function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
     }
   }
 
+  const assignedToMe = task.assigned_to && task.assigned_to === currentUserId
+
   return (
     <div className="flex items-center gap-2 py-2 group/row">
       <Checkbox done={task.completed} onToggle={handleToggle} />
       <span className={`flex-1 text-sm font-body transition-all duration-200 ${task.completed ? 'line-through text-ink-muted' : 'text-ink-primary'}`}>
         {task.content}
       </span>
-      {task.is_shared && (
+      {task.assigned_to ? (
+        <span
+          className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-display tracking-wider ${
+            assignedToMe
+              ? 'bg-accent-green/20 text-accent-green'
+              : 'bg-accent-gold/20 text-accent-gold'
+          }`}
+          title={assignedToMe ? '指派給我' : `指派給 ${task.assignee_name ?? '夥伴'}`}
+        >
+          <UserCheck size={11} />
+          <span className="text-[10px]">{assignedToMe ? '我' : task.assignee_name ?? '夥伴'}</span>
+        </span>
+      ) : task.is_shared && (
         <span
           className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-display tracking-wider bg-accent-blue/15 text-accent-blue"
-          title={isOthers ? `${task.owner_name ?? '夥伴'} 的共用任務` : '共用'}
+          title={isOthers ? `${task.owner_name ?? '夥伴'} 建立的共用任務` : '共用任務'}
         >
           <Users size={11} />
           {isOthers && <span className="text-[10px]">{task.owner_name ?? '夥伴'}</span>}
@@ -105,18 +119,22 @@ function ClientColumn() {
   const tasks = allTasks.filter(t => t.category === 'client')
   const addTask = useTodayStore(s => s.addTask)
   const todayStr = useTodayStore(s => s.todayStr)
+  const partnerId = useTodayStore(s => s.partnerId)
+  const partnerName = useTodayStore(s => s.partnerName)
   const clientsLoaded = useClientStore(s => s.loaded)
   const [adding, setAdding] = useState(false)
   const [input, setInput] = useState('')
   const [client, setClient] = useState<ClientName>('')
   const [shared, setShared] = useState(false)
+  const [assignPartner, setAssignPartner] = useState(false)
 
   function handleAdd() {
     if (!input.trim()) return
     const chosen = client || CLIENT_ORDER[0]
     if (!chosen) return
-    addTask({ date: todayStr, category: 'client', client: chosen, content: input.trim(), completed: false }, shared)
-    setInput(''); setShared(false); setAdding(false)
+    const assignedTo = shared && assignPartner && partnerId ? partnerId : null
+    addTask({ date: todayStr, category: 'client', client: chosen, content: input.trim(), completed: false }, shared, assignedTo)
+    setInput(''); setShared(false); setAssignPartner(false); setAdding(false)
   }
 
   return (
@@ -148,9 +166,9 @@ function ClientColumn() {
                   className="flex-1 bg-elevated border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary outline-none placeholder:text-ink-muted font-body"
                 />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
-                  onClick={() => setShared(s => !s)}
+                  onClick={() => { setShared(s => !s); if (shared) setAssignPartner(false) }}
                   className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded font-body transition-colors ${
                     shared
                       ? 'bg-accent-blue/25 text-accent-blue'
@@ -160,6 +178,19 @@ function ClientColumn() {
                   <Users size={12} />
                   {shared ? '共用' : '個人'}
                 </button>
+                {shared && partnerId && (
+                  <button
+                    onClick={() => setAssignPartner(a => !a)}
+                    className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded font-body transition-colors ${
+                      assignPartner
+                        ? 'bg-accent-gold/25 text-accent-gold'
+                        : 'bg-elevated text-ink-muted hover:text-ink-primary'
+                    }`}
+                  >
+                    <UserCheck size={12} />
+                    {assignPartner ? `指派給 ${partnerName ?? '對方'}` : '未指派'}
+                  </button>
+                )}
                 <button onClick={handleAdd} className="text-xs px-3 py-1 bg-accent-blue/15 text-accent-blue rounded hover:bg-accent-blue/25 transition-colors font-body">新增</button>
                 <button onClick={() => setAdding(false)} className="text-xs px-3 py-1 text-ink-muted hover:text-ink-primary transition-colors font-body">取消</button>
               </div>
@@ -201,14 +232,18 @@ function GrowthColumn() {
   const tasks = allTasks.filter(t => t.category === 'growth')
   const addTask = useTodayStore(s => s.addTask)
   const todayStr = useTodayStore(s => s.todayStr)
+  const partnerId = useTodayStore(s => s.partnerId)
+  const partnerName = useTodayStore(s => s.partnerName)
   const [topic, setTopic] = useState(GROWTH_OPTIONS[0])
   const [goal, setGoal] = useState('')
   const [shared, setShared] = useState(false)
+  const [assignPartner, setAssignPartner] = useState(false)
 
   function handleAdd() {
     if (!goal.trim()) return
-    addTask({ date: todayStr, category: 'growth', content: `${topic}：${goal.trim()}`, completed: false }, shared)
-    setGoal(''); setShared(false)
+    const assignedTo = shared && assignPartner && partnerId ? partnerId : null
+    addTask({ date: todayStr, category: 'growth', content: `${topic}：${goal.trim()}`, completed: false }, shared, assignedTo)
+    setGoal(''); setShared(false); setAssignPartner(false)
   }
 
   return (
@@ -232,7 +267,7 @@ function GrowthColumn() {
             className="flex-1 bg-elevated border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary outline-none placeholder:text-ink-muted font-body"
           />
           <button
-            onClick={() => setShared(s => !s)}
+            onClick={() => { setShared(s => !s); if (shared) setAssignPartner(false) }}
             className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded font-body transition-colors ${
               shared
                 ? 'bg-accent-blue/25 text-accent-blue'
@@ -247,6 +282,19 @@ function GrowthColumn() {
             <Plus size={13} />
           </button>
         </div>
+        {shared && partnerId && (
+          <button
+            onClick={() => setAssignPartner(a => !a)}
+            className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded font-body transition-colors w-fit ${
+              assignPartner
+                ? 'bg-accent-gold/25 text-accent-gold'
+                : 'bg-elevated text-ink-muted hover:text-ink-primary'
+            }`}
+          >
+            <UserCheck size={12} />
+            {assignPartner ? `指派給 ${partnerName ?? '對方'}` : '未指派'}
+          </button>
+        )}
       </div>
     </div>
   )

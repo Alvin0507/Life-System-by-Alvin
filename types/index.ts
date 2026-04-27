@@ -30,6 +30,8 @@ export interface Task {
   is_shared?: boolean
   user_id?: string
   owner_name?: string | null
+  assigned_to?: string | null
+  assignee_name?: string | null
   created_at: string
 }
 

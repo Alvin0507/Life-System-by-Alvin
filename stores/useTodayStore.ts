@@ -46,12 +46,18 @@ interface TodayStore {
   todayStr: string
   loaded: boolean
   currentUserId: string | null
+  partnerId: string | null
+  partnerName: string | null
 
   loadToday: () => Promise<void>
   setDayMode: (mode: DayMode) => void
   toggleTask: (id: string) => Promise<void>
   updateTaskContent: (id: string, content: string) => Promise<void>
-  addTask: (task: Omit<Task, 'id' | 'created_at'>, isShared?: boolean) => Promise<void>
+  addTask: (
+    task: Omit<Task, 'id' | 'created_at'>,
+    isShared?: boolean,
+    assignedTo?: string | null
+  ) => Promise<void>
   deleteTask: (id: string) => Promise<void>
   updateNote: (field: keyof DailyNote, value: string) => Promise<void>
   getCompletionRate: () => number
@@ -68,6 +74,8 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
   todayStr: getTodayString(),
   loaded: false,
   currentUserId: null,
+  partnerId: null,
+  partnerName: null,
 
   loadToday: async () => {
     const supabase = createSupabase()
@@ -92,21 +100,26 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
     ])
 
     const rawTasks = tasksRes.data ?? []
-    const ownerIds = Array.from(
-      new Set(
-        rawTasks
-          .filter(t => t.is_shared && t.user_id && t.user_id !== user.id)
-          .map(t => t.user_id as string)
-      )
-    )
-    const ownerNames = new Map<string, string>()
-    if (ownerIds.length) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, display_name, email')
-        .in('id', ownerIds)
-      for (const p of profiles ?? []) {
-        ownerNames.set(p.id, p.display_name || p.email?.split('@')[0] || '夥伴')
+    const profileIds = new Set<string>()
+    for (const t of rawTasks) {
+      if (t.user_id) profileIds.add(t.user_id)
+      if (t.assigned_to) profileIds.add(t.assigned_to)
+    }
+    profileIds.delete(user.id)
+
+    const profileMap = new Map<string, string>()
+    let partnerId: string | null = null
+    let partnerName: string | null = null
+
+    const { data: allProfiles } = await supabase
+      .from('profiles')
+      .select('id, display_name, email')
+    for (const p of allProfiles ?? []) {
+      const name = p.display_name || p.email?.split('@')[0] || '夥伴'
+      profileMap.set(p.id, name)
+      if (p.id !== user.id && !partnerId) {
+        partnerId = p.id
+        partnerName = name
       }
     }
 
@@ -120,7 +133,9 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
       target_count: t.target_count ?? undefined,
       is_shared: t.is_shared ?? false,
       user_id: t.user_id ?? undefined,
-      owner_name: t.user_id && t.user_id !== user.id ? ownerNames.get(t.user_id) ?? null : null,
+      owner_name: t.user_id && t.user_id !== user.id ? profileMap.get(t.user_id) ?? null : null,
+      assigned_to: t.assigned_to ?? null,
+      assignee_name: t.assigned_to ? (t.assigned_to === user.id ? '我' : profileMap.get(t.assigned_to) ?? null) : null,
       created_at: t.created_at,
     }))
 
@@ -148,6 +163,8 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
       todayStr: date,
       loaded: true,
       currentUserId: user.id,
+      partnerId,
+      partnerName,
     })
   },
 
@@ -172,11 +189,11 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
     await createSupabase().from('tasks').update({ content }).eq('id', id)
   },
 
-  addTask: async (task, isShared = false) => {
+  addTask: async (task, isShared = false, assignedTo = null) => {
     const supabase = createSupabase()
     const user = await getSessionUser()
     if (!user) return
-    const { tasks } = get()
+    const { tasks, partnerId, partnerName } = get()
     const sort_order = tasks.length
     const client_id = getClientIdByKey(task.client ?? null)
 
@@ -192,10 +209,16 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
         target_count: task.target_count ?? null,
         sort_order,
         is_shared: isShared,
+        assigned_to: assignedTo,
       })
       .select()
       .single()
     if (error || !data) return
+
+    const assigneeName =
+      data.assigned_to === user.id ? '我'
+      : data.assigned_to && data.assigned_to === partnerId ? partnerName
+      : null
 
     const newTask: Task = {
       id: data.id,
@@ -208,6 +231,8 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
       is_shared: data.is_shared ?? false,
       user_id: data.user_id ?? user.id,
       owner_name: null,
+      assigned_to: data.assigned_to ?? null,
+      assignee_name: assigneeName,
       created_at: data.created_at,
     }
     set({ tasks: [...tasks, newTask] })

@@ -1,7 +1,7 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Users, Send, Pin, PinOff, Trash2 } from 'lucide-react'
+import { Users, UserCheck, Send, Pin, PinOff, Trash2 } from 'lucide-react'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { useAppStore } from '@/stores/useAppStore'
 import LoadingScreen from '@/components/ui/LoadingScreen'
@@ -9,6 +9,8 @@ import { Task } from '@/types'
 import { getTodayString } from '@/lib/utils'
 import { getClientKeyById } from '@/stores/useClientStore'
 import { useClientStore, CLIENT_CONFIG } from '@/stores/useClientStore'
+
+type AssignFilter = 'all' | 'mine' | 'partner' | 'unassigned'
 
 interface SharedNote {
   id: string
@@ -28,6 +30,7 @@ export default function SharedPage() {
   const [loaded, setLoaded] = useState(false)
   const [draft, setDraft] = useState('')
   const [posting, setPosting] = useState(false)
+  const [filter, setFilter] = useState<AssignFilter>('all')
   const clientsLoaded = useClientStore(s => s.loaded)
   const addToast = useAppStore(s => s.addToast)
 
@@ -61,6 +64,8 @@ export default function SharedPage() {
       is_shared: t.is_shared ?? false,
       user_id: t.user_id ?? undefined,
       owner_name: pMap.get(t.user_id) ?? null,
+      assigned_to: t.assigned_to ?? null,
+      assignee_name: t.assigned_to ? (pMap.get(t.assigned_to) ?? null) : null,
       created_at: t.created_at,
     })))
 
@@ -139,9 +144,23 @@ export default function SharedPage() {
     await createSupabase().from('shared_notes').delete().eq('id', id)
   }
 
+  const filteredTasks = useMemo(() => {
+    if (filter === 'all') return tasks
+    if (filter === 'mine') return tasks.filter(t => t.assigned_to === me)
+    if (filter === 'partner') return tasks.filter(t => t.assigned_to && t.assigned_to !== me)
+    return tasks.filter(t => !t.assigned_to)
+  }, [tasks, filter, me])
+
   if (!loaded || !clientsLoaded) return <LoadingScreen label="LOADING SHARED" />
 
-  const completedCount = tasks.filter(t => t.completed).length
+  const completedCount = filteredTasks.filter(t => t.completed).length
+
+  const filterChips: { key: AssignFilter; label: string; count: number }[] = [
+    { key: 'all', label: '全部', count: tasks.length },
+    { key: 'mine', label: '指派給我', count: tasks.filter(t => t.assigned_to === me).length },
+    { key: 'partner', label: '指派給對方', count: tasks.filter(t => t.assigned_to && t.assigned_to !== me).length },
+    { key: 'unassigned', label: '未指派', count: tasks.filter(t => !t.assigned_to).length },
+  ]
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 md:px-8 space-y-6 pb-24">
@@ -164,17 +183,40 @@ export default function SharedPage() {
       >
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 border-l-accent-blue">
           <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">Today · Shared Tasks</span>
-          <span className="ml-auto text-[12px] font-mono text-ink-muted">{completedCount}/{tasks.length}</span>
+          <span className="ml-auto text-[12px] font-mono text-ink-muted">{completedCount}/{filteredTasks.length}</span>
         </div>
-        {tasks.length === 0 ? (
+
+        <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border-subtle/60 overflow-x-auto">
+          {filterChips.map(chip => (
+            <button
+              key={chip.key}
+              onClick={() => setFilter(chip.key)}
+              className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-display tracking-wider transition-colors whitespace-nowrap ${
+                filter === chip.key
+                  ? 'bg-accent-blue/20 text-accent-blue border border-accent-blue/40'
+                  : 'bg-elevated text-ink-muted hover:text-ink-primary border border-transparent'
+              }`}
+            >
+              {chip.label}
+              <span className="font-mono opacity-70">{chip.count}</span>
+            </button>
+          ))}
+        </div>
+
+        {filteredTasks.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <p className="font-body text-xs text-ink-muted">今日還沒有共用任務</p>
-            <p className="font-body text-[11px] text-ink-muted mt-1">在 Today 頁面新增任務時開啟「共用」即可</p>
+            <p className="font-body text-xs text-ink-muted">
+              {tasks.length === 0 ? '今日還沒有共用任務' : '此篩選沒有任務'}
+            </p>
+            {tasks.length === 0 && (
+              <p className="font-body text-[11px] text-ink-muted mt-1">在 Today 頁面新增任務時開啟「共用」即可</p>
+            )}
           </div>
         ) : (
           <div className="px-4 py-2 divide-y divide-border-subtle/50">
-            {tasks.map(t => {
+            {filteredTasks.map(t => {
               const isOthers = t.user_id && t.user_id !== me
+              const assignedToMe = t.assigned_to && t.assigned_to === me
               return (
                 <div key={t.id} className="flex items-center gap-2 py-2">
                   <button
@@ -203,10 +245,21 @@ export default function SharedPage() {
                       {CLIENT_CONFIG[t.client].label}
                     </span>
                   )}
-                  <span className={`shrink-0 text-[11px] font-display tracking-wider px-1.5 py-0.5 rounded
-                    ${isOthers ? 'bg-accent-gold/15 text-accent-gold' : 'bg-accent-blue/15 text-accent-blue'}`}>
-                    {isOthers ? (t.owner_name ?? '夥伴') : '我'}
-                  </span>
+                  {t.assigned_to ? (
+                    <span
+                      className={`shrink-0 flex items-center gap-1 text-[11px] font-display tracking-wider px-1.5 py-0.5 rounded
+                        ${assignedToMe ? 'bg-accent-green/20 text-accent-green' : 'bg-accent-gold/20 text-accent-gold'}`}
+                      title={`指派給 ${assignedToMe ? '我' : t.assignee_name ?? '夥伴'}`}
+                    >
+                      <UserCheck size={11} />
+                      {assignedToMe ? '我' : t.assignee_name ?? '夥伴'}
+                    </span>
+                  ) : (
+                    <span className={`shrink-0 text-[11px] font-display tracking-wider px-1.5 py-0.5 rounded
+                      ${isOthers ? 'bg-accent-gold/15 text-accent-gold' : 'bg-accent-blue/15 text-accent-blue'}`}>
+                      {isOthers ? (t.owner_name ?? '夥伴') : '我'}
+                    </span>
+                  )}
                 </div>
               )
             })}
