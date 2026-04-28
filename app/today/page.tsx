@@ -112,6 +112,31 @@ function CombatBanner() {
   )
 }
 
+/* ── Compact Quote Card (sidebar) ── */
+function CompactQuote({ quote, onShuffle }: { quote: string; onShuffle: () => void }) {
+  return (
+    <div className="card-hover bg-card/80 backdrop-blur-sm border border-border-subtle rounded-xl px-4 py-4 relative">
+      <p
+        className="text-base leading-relaxed"
+        style={{
+          fontFamily: 'var(--font-quote)',
+          fontWeight: 600,
+          color: '#ffe452',
+          textShadow: '0 0 14px rgba(255,215,0,0.4), 0 1px 0 rgba(0,0,0,0.4)',
+        }}
+      >
+        {quote}
+      </p>
+      <button
+        onClick={onShuffle}
+        className="mt-2 text-ink-muted hover:text-accent-gold text-xs font-body transition-colors"
+      >
+        ↻ 換一句
+      </button>
+    </div>
+  )
+}
+
 /* ── MAIN PAGE ── */
 export default function TodayPage() {
   const loadToday = useTodayStore(s => s.loadToday)
@@ -172,10 +197,15 @@ export default function TodayPage() {
   const isCombat = dayMode === 'combat'
   const isField = dayMode === 'field'
 
+  function shuffleQuote() {
+    setQuoteOffset(v => v + 1)
+    addToast({ type: 'info', message: '換了一句話。' })
+  }
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 md:px-8 space-y-6 pb-24">
+    <div className="max-w-7xl mx-auto px-4 py-6 md:px-8 pb-24">
       {/* ── HEADER ── */}
-      <motion.div {...fadeUp(0)} className="flex items-start justify-between gap-4 flex-wrap">
+      <motion.div {...fadeUp(0)} className="flex items-start justify-between gap-4 flex-wrap mb-5">
         <div>
           <p className="font-body text-xs text-ink-secondary mb-1">
             <span className="text-accent-blue">◇</span> {greeting.text}
@@ -203,78 +233,64 @@ export default function TodayPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
+            className="mb-5"
           >
             <CombatBanner />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── QUOTE ── */}
-      <motion.div {...fadeUp(0.05)}
-        className="card-hover bg-card/80 backdrop-blur-sm border border-border-subtle rounded-xl px-6 py-5 text-center relative"
-      >
-        <p
-          className="text-xl md:text-2xl leading-relaxed"
-          style={{
-            fontFamily: 'var(--font-quote)',
-            fontWeight: 600,
-            color: '#ffe452',
-            textShadow: '0 0 18px rgba(255,215,0,0.45), 0 1px 0 rgba(0,0,0,0.4)',
-          }}
-        >
-          {quote}
-        </p>
-        <button
-          onClick={() => {
-            setQuoteOffset(v => v + 1)
-            addToast({ type: 'info', message: '換了一句話。' })
-          }}
-          className="absolute bottom-3 right-4 text-ink-muted hover:text-accent-gold text-xs font-body transition-colors"
-        >
-          ↻ 換一句
-        </button>
-      </motion.div>
-
-      {/* ── WIN CONDITIONS (always shown) ── */}
-      <motion.div {...fadeUp(0.1)}>
-        <WinConditions />
-      </motion.div>
-
-      {/* ── TASK MATRIX / FIELD ── */}
-      <motion.div {...fadeUp(0.15)}>
-        <AnimatePresence mode="wait">
-          {isField ? (
-            <FieldOperation key="field" />
-          ) : (
-            <motion.div
-              key="matrix"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-            >
-              <TaskMatrix combatMode={isCombat} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* ── NON-NEGOTIABLES (hidden in COMBAT / FIELD) ── */}
-      <AnimatePresence>
-        {!isCombat && !isField && (
-          <motion.div
-            key="nonneg"
-            {...fadeUp(0.2)}
-            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-          >
-            <NonNegotiables />
+      {/* ── 2-COL GRID: Main + Sidebar ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── MAIN COLUMN ── */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* WIN CONDITIONS — top, always shown */}
+          <motion.div {...fadeUp(0.05)}>
+            <WinConditions />
           </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* ── DAILY NOTE ── */}
-      <motion.div {...fadeUp(0.25)}>
-        <DailyNote />
-      </motion.div>
+          {/* TASK MATRIX / FIELD */}
+          <motion.div {...fadeUp(0.1)}>
+            <AnimatePresence mode="wait">
+              {isField ? (
+                <FieldOperation key="field" />
+              ) : (
+                <motion.div
+                  key="matrix"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                >
+                  <TaskMatrix combatMode={isCombat} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* NON-NEGOTIABLES (hidden in COMBAT / FIELD) */}
+          <AnimatePresence>
+            {!isCombat && !isField && (
+              <motion.div
+                key="nonneg"
+                {...fadeUp(0.15)}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <NonNegotiables />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ── SIDEBAR ── */}
+        <aside className="lg:col-span-1 space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <motion.div {...fadeUp(0.05)}>
+            <CompactQuote quote={quote} onShuffle={shuffleQuote} />
+          </motion.div>
+          <motion.div {...fadeUp(0.1)}>
+            <DailyNote />
+          </motion.div>
+        </aside>
+      </div>
 
       {/* ── Floating Progress Ring ── */}
       <ProgressRing />

@@ -1,5 +1,7 @@
 'use client'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { completionQuotes } from '@/lib/quotes'
@@ -9,6 +11,9 @@ export default function NonNegotiables() {
   const tasks = allTasks.filter(t => t.category === 'non_neg')
   const toggleTask = useTodayStore(s => s.toggleTask)
   const addToast = useAppStore(s => s.addToast)
+  const [open, setOpen] = useState(true)
+
+  const done = tasks.filter(t => t.completed).length
 
   function handleToggle(id: string, wasCompleted: boolean) {
     toggleTask(id)
@@ -20,14 +25,32 @@ export default function NonNegotiables() {
 
   return (
     <section>
-      <div className="mb-3">
-        <h2 className="font-display text-sm tracking-[0.2em] text-ink-secondary uppercase">
-          Non-Negotiables
-        </h2>
-        <p className="text-ink-muted text-xs mt-0.5 font-body">不做這些，今天不算完整</p>
-      </div>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-end gap-2 mb-3 hover:opacity-80 transition-opacity text-left"
+      >
+        <div className="flex-1">
+          <h2 className="font-display text-sm tracking-[0.2em] text-ink-secondary uppercase">
+            Non-Negotiables
+          </h2>
+          <p className="text-ink-muted text-xs mt-0.5 font-body">不做這些，今天不算完整</p>
+        </div>
+        <span className="font-mono text-xs text-ink-muted">{done}/{tasks.length}</span>
+        <motion.span animate={{ rotate: open ? 0 : -90 }} transition={{ duration: 0.2 }} className="text-ink-muted pb-0.5">
+          <ChevronDown size={14} />
+        </motion.span>
+      </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {tasks.map(task => (
           <motion.button
             key={task.id}
@@ -65,6 +88,9 @@ export default function NonNegotiables() {
           </motion.button>
         ))}
       </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

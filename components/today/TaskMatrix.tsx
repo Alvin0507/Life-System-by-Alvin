@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Users, UserCheck } from 'lucide-react'
+import { Plus, Trash2, Users, UserCheck, ChevronDown } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER } from '@/stores/useClientStore'
@@ -113,6 +113,32 @@ function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
   )
 }
 
+/* ── Collapsible Section Header ── */
+function SectionHeader({
+  title, accent, done, total, open, onToggle,
+}: {
+  title: string
+  accent: string
+  done: number
+  total: number
+  open: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 hover:bg-elevated/50 transition-colors text-left"
+      style={{ borderLeftColor: accent }}
+    >
+      <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">{title}</span>
+      <span className="ml-auto text-[12px] font-mono text-ink-muted">{done}/{total}</span>
+      <motion.span animate={{ rotate: open ? 0 : -90 }} transition={{ duration: 0.2 }} className="text-ink-muted">
+        <ChevronDown size={14} />
+      </motion.span>
+    </button>
+  )
+}
+
 /* ── CLIENT COLUMN ── */
 function ClientColumn() {
   const allTasks = useTodayStore(s => s.tasks)
@@ -127,6 +153,7 @@ function ClientColumn() {
   const [client, setClient] = useState<ClientName>('')
   const [shared, setShared] = useState(false)
   const [assignPartner, setAssignPartner] = useState(false)
+  const [open, setOpen] = useState(true)
 
   function handleAdd() {
     if (!input.trim()) return
@@ -139,10 +166,24 @@ function ClientColumn() {
 
   return (
     <div className="bg-card border border-border-subtle rounded-xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 border-l-accent-red">
-        <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">Client Work</span>
-        <span className="ml-auto text-[12px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
-      </div>
+      <SectionHeader
+        title="Client Work"
+        accent="#ff3860"
+        done={tasks.filter(t => t.completed).length}
+        total={tasks.length}
+        open={open}
+        onToggle={() => setOpen(o => !o)}
+      />
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
       <div className="px-4 py-2 divide-y divide-border-subtle/50">
         {tasks.map(t => <TaskRow key={t.id} task={t} showDelete />)}
       </div>
@@ -204,6 +245,9 @@ function ClientColumn() {
           </button>
         )}
       </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -212,16 +256,34 @@ function ClientColumn() {
 function SocialColumn() {
   const allTasks = useTodayStore(s => s.tasks)
   const tasks = allTasks.filter(t => t.category === 'social')
+  const [open, setOpen] = useState(true)
 
   return (
     <div className="bg-card border border-border-subtle rounded-xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 border-l-accent-gold">
-        <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">Social Ops</span>
-        <span className="ml-auto text-[12px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
-      </div>
-      <div className="px-4 py-2 divide-y divide-border-subtle/50">
-        {tasks.map(t => <TaskRow key={t.id} task={t} />)}
-      </div>
+      <SectionHeader
+        title="Social Ops"
+        accent="#ffd700"
+        done={tasks.filter(t => t.completed).length}
+        total={tasks.length}
+        open={open}
+        onToggle={() => setOpen(o => !o)}
+      />
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 py-2 divide-y divide-border-subtle/50">
+              {tasks.map(t => <TaskRow key={t.id} task={t} />)}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -238,6 +300,7 @@ function GrowthColumn() {
   const [goal, setGoal] = useState('')
   const [shared, setShared] = useState(false)
   const [assignPartner, setAssignPartner] = useState(false)
+  const [open, setOpen] = useState(true)
 
   function handleAdd() {
     if (!goal.trim()) return
@@ -248,10 +311,24 @@ function GrowthColumn() {
 
   return (
     <div className="bg-card border border-border-subtle rounded-xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle border-l-2 border-l-accent-green">
-        <span className="font-display text-[12px] tracking-[0.2em] text-ink-primary uppercase">Growth</span>
-        <span className="ml-auto text-[12px] font-mono text-ink-muted">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
-      </div>
+      <SectionHeader
+        title="Growth"
+        accent="#00ff88"
+        done={tasks.filter(t => t.completed).length}
+        total={tasks.length}
+        open={open}
+        onToggle={() => setOpen(o => !o)}
+      />
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
       <div className="px-4 py-2 divide-y divide-border-subtle/50">
         {tasks.map(t => <TaskRow key={t.id} task={t} showDelete />)}
       </div>
@@ -296,6 +373,9 @@ function GrowthColumn() {
           </button>
         )}
       </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -316,7 +396,7 @@ export default function TaskMatrix({ combatMode = false }: { combatMode?: boolea
           </motion.span>
         )}
       </div>
-      <div className={`grid gap-4 ${combatMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
+      <div className="space-y-3">
         <ClientColumn />
         <AnimatePresence>
           {!combatMode && (
