@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence, type MotionProps } from 'framer-motion'
-import { Lock } from 'lucide-react'
+import { Lock, Target, CalendarDays, Plane, TrendingUp } from 'lucide-react'
 import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER } from '@/stores/useClientStore'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getWeekStart, getDaysLeftInMonth } from '@/lib/utils'
@@ -502,29 +502,44 @@ export default function WeeklyPage() {
     }
   }, [reviews])
 
-  if (!loaded) return <LoadingScreen label="LOADING WEEK" />
-
   const todayIdx = weekDays.indexOf(today)
   const daysPassed = todayIdx >= 0 ? todayIdx + 1 : 7
   const daysLeft = 7 - daysPassed
   const weekTrips = fieldTrips.filter(t => weekDays.includes(t.trip_date))
 
+  const weekRate = useMemo(() => {
+    let total = 0, done = 0
+    for (const date of weekDays) {
+      if (date > today) continue
+      const arr = tasksByDate[date] ?? []
+      total += arr.length
+      done += arr.filter(t => t.completed).length
+    }
+    return total ? Math.round((done / total) * 100) : 0
+  }, [weekDays, tasksByDate, today])
+
+  if (!loaded) return <LoadingScreen label="LOADING WEEK" />
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 md:px-8 space-y-8 pb-24">
 
+      {/* ── 統計卡 ── */}
       <motion.div {...fadeUp(0)}>
-        <div className="bg-card border border-border-subtle rounded-xl px-5 py-4 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="font-display text-xl text-ink-primary tracking-wider">{weekRange(weekStart)}</h1>
-            <p className="font-mono text-xs text-ink-secondary mt-1">
-              已過 {daysPassed} 天 · 剩 {daysLeft} 天
-              {weekTrips.length > 0 && <span> · 本週外出 <span className="text-accent-gold">{weekTrips.length}</span> 次</span>}
-            </p>
+        <div className="bg-card border border-border-subtle rounded-xl p-5">
+          <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+            <h1 className="font-display text-2xl text-ink-primary tracking-wider">{weekRange(weekStart)}</h1>
+            <span className="font-display text-[12px] tracking-[0.25em] text-ink-muted uppercase">WEEKLY OPS</span>
           </div>
-          <span className="font-display text-[12px] tracking-[0.2em] text-ink-secondary uppercase">WEEKLY OPS</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCell icon={TrendingUp} accent="#00d4ff" label="本週完成率" value={`${weekRate}%`} />
+            <StatCell icon={CalendarDays} accent="#ffd700" label="已過 / 剩餘" value={`${daysPassed} / ${daysLeft}`} />
+            <StatCell icon={Plane} accent="#00ff88" label="本週外出" value={`${weekTrips.length} 次`} />
+            <StatCell icon={Target} accent="#ff3860" label="月底剩" value={`${getDaysLeftInMonth()} 天`} />
+          </div>
         </div>
       </motion.div>
 
+      {/* ── 主內容 ── */}
       <motion.div {...fadeUp(0.05)}>
         <h2 className="font-display text-sm tracking-[0.2em] text-ink-primary uppercase mb-3">Week Grid</h2>
         <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
@@ -540,11 +555,6 @@ export default function WeeklyPage() {
             />
           ))}
         </div>
-        <div className="flex flex-wrap gap-3 mt-3">
-          {Object.entries({ '🔥': 'COMBAT', '⚡': 'NORMAL', '📍': 'FIELD', '😴': 'REST' }).map(([emoji, label]) => (
-            <span key={label} className="text-[11px] text-ink-muted font-body">{emoji} {label}</span>
-          ))}
-        </div>
       </motion.div>
 
       <motion.div {...fadeUp(0.1)}>
@@ -552,12 +562,40 @@ export default function WeeklyPage() {
       </motion.div>
 
       <motion.div {...fadeUp(0.15)}>
-        <WeeklyDebrief weekStart={weekStart} reviews={reviews} onSave={saveReview} />
-      </motion.div>
-
-      <motion.div {...fadeUp(0.2)}>
         <MiniCalendar fieldTrips={fieldTrips} tasksByDate={tasksByDate} />
       </motion.div>
+
+      {/* ── 回顧區（最下方）── */}
+      <motion.div {...fadeUp(0.2)}>
+        <WeeklyDebrief weekStart={weekStart} reviews={reviews} onSave={saveReview} />
+      </motion.div>
+    </div>
+  )
+}
+
+/* ── StatCell ── */
+function StatCell({
+  icon: Icon, accent, label, value,
+}: {
+  icon: typeof Target
+  accent: string
+  label: string
+  value: string
+}) {
+  return (
+    <div className="bg-elevated/60 border border-border-subtle rounded-lg px-4 py-3 flex items-center gap-3">
+      <div
+        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+        style={{ backgroundColor: `${accent}1f`, boxShadow: `inset 0 0 0 1px ${accent}40` }}
+      >
+        <Icon size={16} style={{ color: accent }} />
+      </div>
+      <div className="min-w-0">
+        <p className="font-display text-[10px] tracking-widest text-ink-muted uppercase mb-0.5">{label}</p>
+        <p className="font-mono text-lg font-semibold text-ink-primary tabular-nums leading-tight" style={{ textShadow: `0 0 12px ${accent}40` }}>
+          {value}
+        </p>
+      </div>
     </div>
   )
 }
