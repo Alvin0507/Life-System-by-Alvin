@@ -15,23 +15,26 @@ export default function MobileNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-[68px] bg-card/95 backdrop-blur-md border-t border-border-subtle flex items-center justify-around px-2 z-40 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-card/95 backdrop-blur-md border-t border-border-subtle flex items-stretch justify-around px-1 z-40 md:hidden pb-[env(safe-area-inset-bottom)]">
       {navItems.map(({ icon: Icon, path, label }) => {
         const active = pathname === path
         return (
           <Link
             key={path}
             href={path}
-            className={`relative flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all btn-press tap-pulse
+            aria-current={active ? 'page' : undefined}
+            className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 rounded-lg transition-colors btn-press tap-pulse
               ${active
-                ? 'text-accent-blue bg-accent-blue/10'
-                : 'text-ink-secondary active:text-ink-primary'}`}
+                ? 'text-accent-blue'
+                : 'text-ink-muted active:text-ink-primary'}`}
           >
             {active && (
-              <span className="absolute -top-[1px] left-1/2 -translate-x-1/2 w-8 h-[2px] bg-accent-blue rounded-full shadow-glow-blue" />
+              <span className="absolute top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-accent-blue shadow-glow-blue" />
             )}
-            <Icon size={24} strokeWidth={active ? 2.4 : 2} />
-            <span className="font-display text-[13px] tracking-wider font-semibold">{label}</span>
+            <Icon size={22} strokeWidth={active ? 2.4 : 1.9} className="mt-1" />
+            <span className={`font-display tracking-wider text-[10px] ${active ? 'font-semibold' : 'font-medium'}`}>
+              {label}
+            </span>
           </Link>
         )
       })}
