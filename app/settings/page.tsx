@@ -138,7 +138,7 @@ function ClientSettings() {
       addToast({ type: 'warning', message: '儲存失敗：' + error.message })
       return
     }
-    await useClientStore.getState().loadAll()
+    await useClientStore.getState().loadAll({ force: true })
     addToast({ type: 'success', message: '設定已儲存' })
   }
 

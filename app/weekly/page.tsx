@@ -3,17 +3,19 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence, type MotionProps } from 'framer-motion'
 import { Lock, Target, CalendarDays, Plane, TrendingUp } from 'lucide-react'
 import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER } from '@/stores/useClientStore'
+import {
+  useWeeklyStore,
+  mergeDayContent,
+  DEFAULT_DAY_CTX,
+  type DayContext,
+  type TaskMap,
+  type ReviewMap,
+  type WeekDayMode,
+} from '@/stores/useWeeklyStore'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getWeekStart, getDaysLeftInMonth } from '@/lib/utils'
-import { DayMode, Task, WeeklyReview, FieldTrip, MonthlyOutput } from '@/types'
+import { Task, WeeklyReview, FieldTrip, MonthlyOutput } from '@/types'
 import LoadingScreen from '@/components/ui/LoadingScreen'
-
-/* ── Types ── */
-type WeekDayMode = DayMode | 'rest'
-interface DayContext { mode: WeekDayMode; note: string }
-type TaskMap = Record<string, Task[]>
-type DayMap = Record<string, DayContext>
-type ReviewMap = Record<string, WeeklyReview>
 
 /* ── Constants ── */
 const DAY_ABBR = ['MON','TUE','WED','THU','FRI','SAT','SUN']
@@ -25,8 +27,6 @@ const MODE_STYLE: Record<string, string> = {
   field:   'bg-accent-gold/15 text-accent-gold border-accent-gold/30',
   rest:    'bg-void text-ink-muted border-border-subtle',
 }
-const DEFAULT_CTX: DayContext = { mode: 'normal', note: '' }
-
 /* ── Local helpers ── */
 function dateOffset(base: string, days: number): string {
   const d = new Date(base + 'T00:00:00')
@@ -60,28 +60,6 @@ function monthCalendar(y: number, m: number): (string | null)[] {
     cells.push(`${y}-${fmt2(m+1)}-${fmt2(d)}`)
   return cells
 }
-function parseDayContent(content: string | null | undefined): DayContext {
-  if (!content) return { ...DEFAULT_CTX }
-  try {
-    const parsed = JSON.parse(content)
-    return {
-      mode: (parsed.day_mode as WeekDayMode) ?? 'normal',
-      note: parsed.day_note ?? '',
-    }
-  } catch {
-    return { ...DEFAULT_CTX }
-  }
-}
-function mergeDayContent(rawContent: string | null | undefined, patch: Partial<DayContext>): string {
-  let base: Record<string, unknown> = {}
-  if (rawContent) {
-    try { base = JSON.parse(rawContent) } catch { /* ignore */ }
-  }
-  if (patch.mode !== undefined) base.day_mode = patch.mode
-  if (patch.note !== undefined) base.day_note = patch.note
-  return JSON.stringify(base)
-}
-
 /* ══ DayBox ══════════════════════════════════════════════════════════════ */
 function DayBox({
   date, today, trips, tasks, ctx, onUpdate,
@@ -381,95 +359,40 @@ const fadeUp = (delay: number): MotionProps => ({
 })
 
 export default function WeeklyPage() {
-  const [loaded, setLoaded] = useState(false)
   const [weekStart] = useState(getWeekStart)
-  const [tasksByDate, setTasksByDate] = useState<TaskMap>({})
-  const [days, setDays] = useState<DayMap>({})
-  const [dayRawContent, setDayRawContent] = useState<Record<string, string>>({})
-  const [reviews, setReviews] = useState<ReviewMap>({})
+  const today = new Date().toISOString().split('T')[0]
+  const weekDays = getWeekDays(weekStart)
+
+  const tasksByDate = useWeeklyStore(s => s.tasksByDate)
+  const days = useWeeklyStore(s => s.days)
+  const dayRawContent = useWeeklyStore(s => s.dayRawContent)
+  const reviews = useWeeklyStore(s => s.reviews)
+  const loaded = useWeeklyStore(s => s.loaded)
+  const loadWeekly = useWeeklyStore(s => s.load)
+  const setDay = useWeeklyStore(s => s.setDay)
+  const setReview = useWeeklyStore(s => s.setReview)
+
   const fieldTrips = useClientStore(s => s.fieldTrips)
   const outputs = useClientStore(s => s.outputs)
   const clientsLoaded = useClientStore(s => s.loaded)
   const loadClients = useClientStore(s => s.loadAll)
-  const today = new Date().toISOString().split('T')[0]
-  const weekDays = getWeekDays(weekStart)
 
   useEffect(() => { if (!clientsLoaded) loadClients() }, [clientsLoaded, loadClients])
-
-  useEffect(() => {
-    (async () => {
-      const supabase = createSupabase()
-      const user = await getSessionUser()
-      if (!user) { setLoaded(true); return }
-
-      const cutoff = new Date(today + 'T00:00:00')
-      cutoff.setDate(cutoff.getDate() - 42)
-      const cutoffStr = cutoff.toISOString().split('T')[0]
-
-      const reviewCutoff = new Date(weekStart + 'T00:00:00')
-      reviewCutoff.setDate(reviewCutoff.getDate() - 28)
-      const reviewCutoffStr = reviewCutoff.toISOString().split('T')[0]
-
-      const [tasksRes, notesRes, reviewsRes] = await Promise.all([
-        supabase.from('tasks').select('*').gte('date', cutoffStr),
-        supabase.from('daily_notes').select('*').gte('date', cutoffStr),
-        supabase.from('weekly_reviews').select('*').gte('week_start', reviewCutoffStr),
-      ])
-
-      const tasksMap: TaskMap = {}
-      for (const t of tasksRes.data ?? []) {
-        const arr = tasksMap[t.date] ?? (tasksMap[t.date] = [])
-        arr.push({
-          id: t.id,
-          date: t.date,
-          category: t.category as Task['category'],
-          content: t.content,
-          completed: t.completed,
-          target_count: t.target_count ?? undefined,
-          created_at: t.created_at,
-        })
-      }
-      setTasksByDate(tasksMap)
-
-      const dmap: DayMap = {}
-      const raws: Record<string, string> = {}
-      for (const n of notesRes.data ?? []) {
-        dmap[n.date] = parseDayContent(n.content)
-        raws[n.date] = n.content ?? ''
-      }
-      setDays(dmap)
-      setDayRawContent(raws)
-
-      const rmap: ReviewMap = {}
-      for (const r of reviewsRes.data ?? []) {
-        rmap[r.week_start] = {
-          id: r.id,
-          week_start: r.week_start,
-          went_well: r.went_well,
-          improve: r.improve,
-          next_week_focus: r.next_week_focus,
-        }
-      }
-      setReviews(rmap)
-
-      setLoaded(true)
-    })()
-  }, [today, weekStart])
+  useEffect(() => { loadWeekly(today, weekStart) }, [loadWeekly, today, weekStart])
 
   const updateDay = useCallback(async (date: string, patch: Partial<DayContext>) => {
     const supabase = createSupabase()
     const user = await getSessionUser()
     if (!user) return
-    const currentCtx = days[date] ?? DEFAULT_CTX
+    const currentCtx = days[date] ?? DEFAULT_DAY_CTX
     const updatedCtx = { ...currentCtx, ...patch }
-    setDays(prev => ({ ...prev, [date]: updatedCtx }))
     const newContent = mergeDayContent(dayRawContent[date], patch)
-    setDayRawContent(prev => ({ ...prev, [date]: newContent }))
+    setDay(date, updatedCtx, newContent)
     await supabase.from('daily_notes').upsert(
       { user_id: user.id, date, content: newContent },
       { onConflict: 'user_id,date' }
     )
-  }, [days, dayRawContent])
+  }, [days, dayRawContent, setDay])
 
   const saveReview = useCallback(async (ws: string, field: keyof WeeklyReview, val: string) => {
     if (field === 'id' || field === 'week_start') return
@@ -478,7 +401,7 @@ export default function WeeklyPage() {
     if (!user) return
     const base = reviews[ws] ?? { id: '__pending', week_start: ws, went_well: '', improve: '', next_week_focus: '' }
     const updated = { ...base, [field]: val }
-    setReviews(prev => ({ ...prev, [ws]: updated }))
+    setReview(ws, updated)
     const payload: {
       user_id: string
       week_start: string
@@ -498,9 +421,9 @@ export default function WeeklyPage() {
       .select()
       .single()
     if (data) {
-      setReviews(prev => ({ ...prev, [ws]: { ...updated, id: data.id } }))
+      setReview(ws, { ...updated, id: data.id })
     }
-  }, [reviews])
+  }, [reviews, setReview])
 
   const todayIdx = weekDays.indexOf(today)
   const daysPassed = todayIdx >= 0 ? todayIdx + 1 : 7
@@ -550,7 +473,7 @@ export default function WeeklyPage() {
               today={today}
               trips={fieldTrips}
               tasks={tasksByDate[date] ?? []}
-              ctx={days[date] ?? DEFAULT_CTX}
+              ctx={days[date] ?? DEFAULT_DAY_CTX}
               onUpdate={updateDay}
             />
           ))}

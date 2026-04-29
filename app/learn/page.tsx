@@ -6,11 +6,13 @@ import { getWeekStart, getTodayString } from '@/lib/utils'
 import { Inspiration } from '@/types'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import LoadingScreen from '@/components/ui/LoadingScreen'
-
-/* ── Types ── */
-interface LearningTopic { id: string; label: string; emoji: string; sort_order: number }
-interface LearningEntry { date: string; topic_id: string; notes: string; checked: boolean }
-type EntryMap = Record<string, LearningEntry>
+import {
+  useLearnStore,
+  entryKey,
+  type LearningTopic,
+  type LearningEntry,
+  type EntryMap,
+} from '@/stores/useLearnStore'
 
 const TAG_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   zaizai:  { label: '🏠 隨行阿宅', color: '#00ff88', bg: 'rgba(0,255,136,0.15)' },
@@ -28,7 +30,6 @@ function dateOffset(base: string, days: number): string {
 function getWeekDays(ws: string): string[] {
   return Array.from({ length: 7 }, (_, i) => dateOffset(ws, i))
 }
-function entryKey(date: string, topicId: string) { return `${date}:${topicId}` }
 function getEntry(map: EntryMap, date: string, topicId: string): LearningEntry {
   return map[entryKey(date, topicId)] ?? { date, topic_id: topicId, notes: '', checked: false }
 }
@@ -297,51 +298,22 @@ const fadeUp = (delay: number): MotionProps => ({
 })
 
 export default function LearnPage() {
-  const [loaded, setLoaded] = useState(false)
-  const [topics, setTopics] = useState<LearningTopic[]>([])
-  const [entries, setEntries] = useState<EntryMap>({})
-  const [insps, setInsps] = useState<Inspiration[]>([])
+  const topics = useLearnStore(s => s.topics)
+  const entries = useLearnStore(s => s.entries)
+  const insps = useLearnStore(s => s.insps)
+  const loaded = useLearnStore(s => s.loaded)
+  const load = useLearnStore(s => s.load)
+  const setTopics = useLearnStore(s => s.setTopics)
+  const setEntries = useLearnStore(s => s.setEntries)
+  const setInsps = useLearnStore(s => s.setInsps)
+
   const [addingTopic, setAddingTopic] = useState(false)
   const [newLabel, setNewLabel] = useState('')
   const [newEmoji, setNewEmoji] = useState('📚')
   const today = getTodayString()
   const weekDays = getWeekDays(getWeekStart())
 
-  useEffect(() => {
-    (async () => {
-      const supabase = createSupabase()
-      const user = await getSessionUser()
-      if (!user) { setLoaded(true); return }
-
-      const cutoff = new Date(today + 'T00:00:00')
-      cutoff.setDate(cutoff.getDate() - 365)
-      const cutoffStr = cutoff.toISOString().split('T')[0]
-
-      const [topicsRes, entriesRes, inspsRes] = await Promise.all([
-        supabase.from('learning_topics').select('*').eq('archived', false).order('sort_order'),
-        supabase.from('learning_entries').select('*').gte('date', cutoffStr),
-        supabase.from('inspirations').select('*').order('created_at', { ascending: false }),
-      ])
-
-      setTopics((topicsRes.data ?? []).map(t => ({
-        id: t.id, label: t.label, emoji: t.emoji, sort_order: t.sort_order,
-      })))
-
-      const map: EntryMap = {}
-      for (const e of entriesRes.data ?? []) {
-        map[entryKey(e.date, e.topic_id)] = {
-          date: e.date, topic_id: e.topic_id, notes: e.notes, checked: e.checked,
-        }
-      }
-      setEntries(map)
-
-      setInsps((inspsRes.data ?? []).map(i => ({
-        id: i.id, content: i.content, tags: i.tags ?? [], created_at: i.created_at,
-      })))
-
-      setLoaded(true)
-    })()
-  }, [today])
+  useEffect(() => { load() }, [load])
 
   async function addTopic() {
     if (!newLabel.trim() || topics.length >= 6) return

@@ -51,6 +51,8 @@ export function getClientKeyById(id: string | null | undefined): string | undefi
 }
 
 /* ── Store ── */
+const CLIENTS_TTL_MS = 30_000
+
 interface ClientStore {
   clients: Client[]
   outputs: MonthlyOutput[]
@@ -58,8 +60,9 @@ interface ClientStore {
   deadlines: Deadline[]
   yearMonth: string
   loaded: boolean
+  lastLoadedAt: number
 
-  loadAll: () => Promise<void>
+  loadAll: (opts?: { force?: boolean }) => Promise<void>
 
   addClient: (init: { key: string; label: string; color: string; revenue: number; script_target: number; edit_target: number }) => Promise<Client | null>
   archiveClient: (id: string) => Promise<void>
@@ -89,8 +92,14 @@ export const useClientStore = create<ClientStore>((set, get) => ({
   deadlines: [],
   yearMonth: getYearMonth(),
   loaded: false,
+  lastLoadedAt: 0,
 
-  loadAll: async () => {
+  loadAll: async (opts) => {
+    const force = opts?.force ?? false
+    const state = get()
+    if (!force && state.loaded && Date.now() - state.lastLoadedAt < CLIENTS_TTL_MS) {
+      return
+    }
     const supabase = createSupabase()
     const ym = getYearMonth()
 
@@ -154,6 +163,7 @@ export const useClientStore = create<ClientStore>((set, get) => ({
       deadlines: deadlinesUI,
       yearMonth: ym,
       loaded: true,
+      lastLoadedAt: Date.now(),
     })
   },
 
@@ -179,20 +189,20 @@ export const useClientStore = create<ClientStore>((set, get) => ({
       .select()
       .single()
     if (error || !data) return null
-    await get().loadAll()
+    await get().loadAll({ force: true })
     return data as Client
   },
 
   archiveClient: async id => {
     const supabase = createSupabase()
     await supabase.from('clients').update({ archived: true }).eq('id', id)
-    await get().loadAll()
+    await get().loadAll({ force: true })
   },
 
   restoreClient: async id => {
     const supabase = createSupabase()
     await supabase.from('clients').update({ archived: false }).eq('id', id)
-    await get().loadAll()
+    await get().loadAll({ force: true })
   },
 
   listArchivedClients: async () => {

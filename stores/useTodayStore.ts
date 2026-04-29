@@ -46,11 +46,13 @@ interface TodayStore {
   dayMode: DayMode
   todayStr: string
   loaded: boolean
+  lastLoadedAt: number
+  rolloverDoneFor: string | null
   currentUserId: string | null
   partnerId: string | null
   partnerName: string | null
 
-  loadToday: () => Promise<void>
+  loadToday: (opts?: { force?: boolean }) => Promise<void>
   setDayMode: (mode: DayMode) => void
   toggleTask: (id: string) => Promise<void>
   updateTaskContent: (id: string, content: string) => Promise<void>
@@ -66,6 +68,7 @@ interface TodayStore {
 }
 
 const LS_MODE_KEY = 'alvin_mode'
+const TODAY_TTL_MS = 30_000
 
 export const useTodayStore = create<TodayStore>((set, get) => ({
   tasks: [],
@@ -74,21 +77,31 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
   dayMode: 'normal',
   todayStr: getTodayString(),
   loaded: false,
+  lastLoadedAt: 0,
+  rolloverDoneFor: null,
   currentUserId: null,
   partnerId: null,
   partnerName: null,
 
-  loadToday: async () => {
+  loadToday: async (opts) => {
+    const force = opts?.force ?? false
+    const date = getTodayString()
+    const state = get()
+    if (!force && state.loaded && state.todayStr === date && Date.now() - state.lastLoadedAt < TODAY_TTL_MS) {
+      return
+    }
     const supabase = createSupabase()
     const user = await getSessionUser()
     if (!user) {
-      set({ loaded: true })
+      set({ loaded: true, lastLoadedAt: Date.now() })
       return
     }
-    const date = getTodayString()
     const yesterday = getYesterdayString()
 
-    await supabase.rpc('rollover_tasks', { p_user_id: user.id, p_today: date })
+    if (state.rolloverDoneFor !== date) {
+      await supabase.rpc('rollover_tasks', { p_user_id: user.id, p_today: date })
+      set({ rolloverDoneFor: date })
+    }
 
     const storedMode =
       (typeof window !== 'undefined' ? (localStorage.getItem(LS_MODE_KEY) as DayMode) : null) ||
@@ -163,6 +176,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
       dayMode: storedMode,
       todayStr: date,
       loaded: true,
+      lastLoadedAt: Date.now(),
       currentUserId: user.id,
       partnerId,
       partnerName,

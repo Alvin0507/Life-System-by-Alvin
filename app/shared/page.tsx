@@ -5,13 +5,11 @@ import {
   Users, UserCheck, Send, Pin, PinOff, Trash2, Bell, BellOff,
   CheckCircle2, PlusCircle, MessageSquare, Activity,
 } from 'lucide-react'
-import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
+import { createClient as createSupabase } from '@/lib/supabase/client'
 import { useAppStore } from '@/stores/useAppStore'
 import LoadingScreen from '@/components/ui/LoadingScreen'
-import { Task } from '@/types'
-import { getTodayString } from '@/lib/utils'
-import { getClientKeyById } from '@/stores/useClientStore'
 import { useClientStore, CLIENT_CONFIG } from '@/stores/useClientStore'
+import { useSharedStore, type ActivityKind } from '@/stores/useSharedStore'
 import {
   ensureNotifyPermission,
   getNotifyPermission,
@@ -19,34 +17,18 @@ import {
 } from '@/lib/notifications'
 
 type AssignFilter = 'all' | 'mine' | 'partner' | 'unassigned'
-type ActivityKind = 'task_completed' | 'task_created' | 'task_assigned' | 'note_posted'
-
-interface SharedNote {
-  id: string
-  author_id: string
-  content: string
-  kind: string
-  pinned: boolean
-  created_at: string
-  author_name: string
-}
-
-interface ActivityEntry {
-  id: string
-  actor_id: string
-  actor_name: string
-  kind: ActivityKind
-  summary: string
-  created_at: string
-}
 
 export default function SharedPage() {
-  const [me, setMe] = useState<string | null>(null)
-  const [profiles, setProfiles] = useState<Map<string, string>>(new Map())
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [notes, setNotes] = useState<SharedNote[]>([])
-  const [activity, setActivity] = useState<ActivityEntry[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const me = useSharedStore(s => s.me)
+  const profiles = useSharedStore(s => s.profiles)
+  const tasks = useSharedStore(s => s.tasks)
+  const notes = useSharedStore(s => s.notes)
+  const activity = useSharedStore(s => s.activity)
+  const loaded = useSharedStore(s => s.loaded)
+  const load = useSharedStore(s => s.load)
+  const setTasks = useSharedStore(s => s.setTasks)
+  const setNotes = useSharedStore(s => s.setNotes)
+
   const [draft, setDraft] = useState('')
   const [posting, setPosting] = useState(false)
   const [filter, setFilter] = useState<AssignFilter>('all')
@@ -65,63 +47,7 @@ export default function SharedPage() {
     else if (result === 'denied') addToast({ type: 'warning', message: '已被瀏覽器封鎖，請至網址列旁的鎖頭手動允許' })
   }
 
-  const load = useCallback(async () => {
-    const supabase = createSupabase()
-    const user = await getSessionUser()
-    if (!user) { setLoaded(true); return }
-    setMe(user.id)
-
-    const today = getTodayString()
-    const [tasksRes, notesRes, profilesRes, activityRes] = await Promise.all([
-      supabase.from('tasks').select('*').eq('is_shared', true).eq('date', today).order('created_at'),
-      supabase.from('shared_notes').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false }).limit(50),
-      supabase.from('profiles').select('id, display_name, email'),
-      supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(50),
-    ])
-
-    const pMap = new Map<string, string>()
-    for (const p of profilesRes.data ?? []) {
-      pMap.set(p.id, p.display_name || p.email?.split('@')[0] || '夥伴')
-    }
-    setProfiles(pMap)
-
-    setActivity((activityRes.data ?? []).map(a => ({
-      id: a.id,
-      actor_id: a.actor_id,
-      actor_name: pMap.get(a.actor_id) ?? '夥伴',
-      kind: a.kind as ActivityKind,
-      summary: a.summary,
-      created_at: a.created_at,
-    })))
-
-    setTasks((tasksRes.data ?? []).map(t => ({
-      id: t.id,
-      date: t.date,
-      category: t.category as Task['category'],
-      client: getClientKeyById(t.client_id),
-      content: t.content,
-      completed: t.completed,
-      target_count: t.target_count ?? undefined,
-      is_shared: t.is_shared ?? false,
-      user_id: t.user_id ?? undefined,
-      owner_name: pMap.get(t.user_id) ?? null,
-      assigned_to: t.assigned_to ?? null,
-      assignee_name: t.assigned_to ? (pMap.get(t.assigned_to) ?? null) : null,
-      created_at: t.created_at,
-    })))
-
-    setNotes((notesRes.data ?? []).map(n => ({
-      id: n.id,
-      author_id: n.author_id,
-      content: n.content,
-      kind: n.kind,
-      pinned: n.pinned,
-      created_at: n.created_at,
-      author_name: pMap.get(n.author_id) ?? '夥伴',
-    })))
-
-    setLoaded(true)
-  }, [])
+  const refresh = useCallback(() => load({ force: true }), [load])
 
   useEffect(() => { load() }, [load])
 
@@ -131,19 +57,19 @@ export default function SharedPage() {
       .channel('shared-page-realtime')
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'tasks', filter: 'is_shared=eq.true' },
-        () => load()
+        () => refresh()
       )
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'shared_notes' },
-        () => load()
+        () => refresh()
       )
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'activity_log' },
-        () => load()
+        () => refresh()
       )
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [load])
+  }, [refresh])
 
   async function toggleTask(id: string, nextDone: boolean) {
     markMyAction(id)
@@ -182,7 +108,7 @@ export default function SharedPage() {
   async function togglePin(id: string, nextPinned: boolean) {
     setNotes(ns => ns.map(n => n.id === id ? { ...n, pinned: nextPinned } : n))
     await createSupabase().from('shared_notes').update({ pinned: nextPinned }).eq('id', id)
-    await load()
+    await refresh()
   }
 
   async function deleteNote(id: string) {
