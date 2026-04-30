@@ -1,14 +1,13 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Zap, Briefcase, Calendar, Brain, Settings, Users, Command } from 'lucide-react'
+import { Home, Zap, Briefcase, Calendar, Brain, Settings, Command } from 'lucide-react'
 import AccountMenu from './AccountMenu'
 
 const navItems = [
   { icon: Home,      path: '/',         label: 'HOME'     },
   { icon: Zap,       path: '/today',    label: 'TODAY'    },
   { icon: Briefcase, path: '/clients',  label: 'CLIENTS'  },
-  { icon: Users,     path: '/shared',   label: 'SHARED'   },
   { icon: Calendar,  path: '/weekly',   label: 'WEEKLY'   },
   { icon: Brain,     path: '/learn',    label: 'LEARN'    },
 ]

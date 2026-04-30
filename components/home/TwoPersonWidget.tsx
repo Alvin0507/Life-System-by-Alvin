@@ -1,8 +1,7 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Users, ArrowUpRight, CheckCircle2, PlusCircle, MessageSquare, UserCheck, Activity } from 'lucide-react'
+import { Users, CheckCircle2, PlusCircle, MessageSquare, UserCheck, Activity } from 'lucide-react'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getTodayString } from '@/lib/utils'
 
@@ -141,12 +140,6 @@ export default function TwoPersonWidget() {
           <Users size={16} className="text-accent-blue" />
           Shared Today
         </h2>
-        <Link
-          href="/shared"
-          className="font-display text-[13px] tracking-widest text-ink-muted hover:text-accent-blue transition-colors flex items-center gap-1 btn-press"
-        >
-          OPEN <ArrowUpRight size={14} />
-        </Link>
       </div>
 
       <div className="bg-card border border-border-subtle rounded-xl p-5 card-interactive">

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Command, Zap, Calendar, Briefcase, Users, Brain, Settings,
+  Command, Zap, Calendar, Briefcase, Brain, Settings,
   Plus, Sparkles, MessageSquare, ArrowRight, CornerDownLeft,
 } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
@@ -29,7 +29,6 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'today',    label: 'Today',    href: '/today',    icon: Zap,       accent: '#00d4ff' },
   { id: 'weekly',   label: 'Weekly',   href: '/weekly',   icon: Calendar,  accent: '#7c3aed' },
   { id: 'clients',  label: 'Clients',  href: '/clients',  icon: Briefcase, accent: '#ff8c42' },
-  { id: 'shared',   label: 'Shared',   href: '/shared',   icon: Users,     accent: '#60a5fa' },
   { id: 'learn',    label: 'Learn',    href: '/learn',    icon: Brain,     accent: '#00ff88' },
   { id: 'settings', label: 'Settings', href: '/settings', icon: Settings,  accent: '#7070a0' },
 ]

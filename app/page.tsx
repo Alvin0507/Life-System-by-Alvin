@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion, type MotionProps } from 'framer-motion'
-import { Zap, Briefcase, Calendar, Brain, Settings, ArrowUpRight, Flame, Target, Clock, Users } from 'lucide-react'
+import { Zap, Briefcase, Calendar, Brain, Settings, ArrowUpRight, Flame, Target, Clock } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useClientStore, CLIENT_CONFIG, TOTAL_REVENUE_GOAL } from '@/stores/useClientStore'
 import { useGreeting } from '@/lib/hooks/useGreeting'
@@ -361,10 +361,6 @@ export default function HomePage() {
           <NavTile
             href="/clients" icon={Briefcase} label="CLIENTS" subtitle="接案營運"
             accent="#ff8c42" delay={0.4}
-          />
-          <NavTile
-            href="/shared" icon={Users} label="SHARED" subtitle="雙人協作"
-            accent="#60a5fa" delay={0.42}
           />
           <NavTile
             href="/learn" icon={Brain} label="LEARN" subtitle="學習積累"
