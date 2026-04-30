@@ -5,6 +5,7 @@ import MobileNav from './MobileNav'
 import PageTransition from './PageTransition'
 import NotificationBootstrap from './NotificationBootstrap'
 import CommandPalette from '@/components/ui/CommandPalette'
+import MessagesDrawer from './MessagesDrawer'
 
 const BARE_PATHS = ['/login', '/auth', '/onboarding']
 
@@ -22,6 +23,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <MobileNav />
       <CommandPalette />
+      <MessagesDrawer />
       <main className="ml-0 md:ml-16 pb-16 md:pb-0 relative z-10">
         <PageTransition>{children}</PageTransition>
       </main>
