@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Users, ArrowUpRight, CheckCircle2, PlusCircle, MessageSquare, UserCheck } from 'lucide-react'
+import { Users, ArrowUpRight, CheckCircle2, PlusCircle, MessageSquare, UserCheck, Activity } from 'lucide-react'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getTodayString } from '@/lib/utils'
 
@@ -19,11 +19,22 @@ interface PersonStat {
   last_activity_summary: string | null
 }
 
+interface ActivityRow {
+  id: string
+  actor_id: string
+  actor_name: string
+  kind: ActivityKind
+  summary: string
+  created_at: string
+  is_me: boolean
+}
+
 const ACTIVE_THRESHOLD_MS = 5 * 60 * 1000
 
 export default function TwoPersonWidget() {
   const [stats, setStats] = useState<PersonStat[] | null>(null)
   const [unread, setUnread] = useState(0)
+  const [activities, setActivities] = useState<ActivityRow[]>([])
 
   const load = useCallback(async () => {
     const supabase = createSupabase()
@@ -43,12 +54,16 @@ export default function TwoPersonWidget() {
         .gte('created_at', dayAgo),
       supabase
         .from('activity_log')
-        .select('actor_id, kind, summary, created_at')
+        .select('id, actor_id, kind, summary, created_at')
         .order('created_at', { ascending: false })
         .limit(20),
     ])
 
     const profiles = (profilesRes.data ?? [])
+    const profileMap = new Map<string, string>()
+    for (const p of profiles) {
+      profileMap.set(p.id, p.id === user.id ? '我' : (p.display_name || p.email?.split('@')[0] || '夥伴'))
+    }
     if (profiles.length === 0) { setStats([]); setUnread(notesRes.count ?? 0); return }
 
     const taskMap = new Map<string, { total: number; done: number }>()
@@ -76,7 +91,7 @@ export default function TwoPersonWidget() {
       const a = lastByActor.get(p.id) ?? null
       return {
         user_id: p.id,
-        name: p.id === user.id ? '我' : (p.display_name || p.email?.split('@')[0] || '夥伴'),
+        name: profileMap.get(p.id) ?? '夥伴',
         total: t.total,
         done: t.done,
         is_me: p.id === user.id,
@@ -88,6 +103,15 @@ export default function TwoPersonWidget() {
 
     setStats(rows)
     setUnread(notesRes.count ?? 0)
+    setActivities((activityRes.data ?? []).map(a => ({
+      id: a.id,
+      actor_id: a.actor_id,
+      actor_name: profileMap.get(a.actor_id) ?? '夥伴',
+      kind: a.kind as ActivityKind,
+      summary: a.summary,
+      created_at: a.created_at,
+      is_me: a.actor_id === user.id,
+    })))
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -186,6 +210,30 @@ export default function TwoPersonWidget() {
             <span className="font-body text-xs text-ink-secondary">
               過去 24 小時有 <span className="text-accent-gold font-semibold">{unread}</span> 則新訊息
             </span>
+          </div>
+        )}
+
+        {activities.length > 0 && (
+          <div className="mt-5 pt-4 border-t border-border-subtle">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity size={12} className="text-accent-green" />
+              <span className="font-display text-[11px] tracking-[0.2em] text-ink-muted uppercase">Activity</span>
+              <span className="ml-auto text-[11px] font-mono text-ink-muted">{activities.length}</span>
+            </div>
+            <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+              {activities.slice(0, 10).map(a => (
+                <div key={a.id} className="flex items-center gap-2 text-[12px]">
+                  <ActionIcon kind={a.kind} />
+                  <span className={`font-display text-[11px] tracking-wider shrink-0 ${a.is_me ? 'text-accent-blue' : 'text-accent-gold'}`}>
+                    {a.is_me ? '我' : a.actor_name}
+                  </span>
+                  <span className="font-body text-ink-secondary truncate flex-1" title={a.summary}>
+                    {actionVerb(a.kind)} · {a.summary}
+                  </span>
+                  <span className="font-mono text-[11px] text-ink-muted shrink-0">{formatRelative(a.created_at)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
