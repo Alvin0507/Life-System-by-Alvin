@@ -2,16 +2,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion, type MotionProps } from 'framer-motion'
-import { Zap, Briefcase, Calendar, Brain, Settings, ArrowUpRight, Flame, Sparkles, Target, Clock, Users } from 'lucide-react'
+import { Zap, Briefcase, Calendar, Brain, Settings, ArrowUpRight, Flame, Target, Clock, Users } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
-import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER, TOTAL_REVENUE_GOAL } from '@/stores/useClientStore'
+import { useClientStore, CLIENT_CONFIG, TOTAL_REVENUE_GOAL } from '@/stores/useClientStore'
 import { useGreeting } from '@/lib/hooks/useGreeting'
 import { useCountUp } from '@/lib/hooks/useCountUp'
 import { formatDate, getTodayString, getDaysLeftInMonth, getDateSeed } from '@/lib/utils'
 import { dailyQuotes } from '@/lib/quotes'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import TwoPersonWidget from '@/components/home/TwoPersonWidget'
-import { Inspiration, ClientName } from '@/types'
 import { createClient as createSupabase } from '@/lib/supabase/client'
 
 /* ── Helpers ── */
@@ -47,15 +46,6 @@ async function fetchBestLearnStreak(today: string): Promise<{ topic: string; str
     if (s > best.streak) best = { topic: `${t.emoji} ${t.label}`, streak: s }
   }
   return best
-}
-
-async function fetchInspirations(limit: number): Promise<Inspiration[]> {
-  const { data } = await createSupabase()
-    .from('inspirations')
-    .select('id, content, tags, created_at')
-    .order('created_at', { ascending: false })
-    .limit(limit)
-  return (data ?? []) as Inspiration[]
 }
 
 async function fetchCompletionStreak(today: string): Promise<number> {
@@ -224,7 +214,6 @@ export default function HomePage() {
   const [clock, setClock] = useState('')
   const [learnStreak, setLearnStreak] = useState<{ topic: string; streak: number }>({ topic: '—', streak: 0 })
   const [completionStreak, setCompletionStreak] = useState(0)
-  const [latestInsps, setLatestInsps] = useState<Inspiration[]>([])
 
   useEffect(() => { loadToday(); loadClients() }, [loadToday, loadClients])
 
@@ -232,7 +221,6 @@ export default function HomePage() {
     if (!todayLoaded) return
     fetchBestLearnStreak(todayStr).then(setLearnStreak)
     fetchCompletionStreak(todayStr).then(setCompletionStreak)
-    fetchInspirations(3).then(setLatestInsps)
   }, [todayLoaded, todayStr])
 
   useEffect(() => {
@@ -356,51 +344,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Client Revenue Snapshot ── */}
-      <motion.section {...fadeUp(0.28)}>
-        <h2 className="font-display text-sm tracking-[0.2em] text-ink-primary uppercase mb-3">Client Snapshot</h2>
-        <div className="bg-card border border-border-subtle rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <span className="font-body text-xs text-ink-secondary">已收款進度</span>
-            <span className="font-mono text-xs text-ink-primary tabular-nums">
-              NT$ <span className="text-accent-gold">{revenueTotal.toLocaleString()}</span>
-              <span className="text-ink-muted"> / {TOTAL_REVENUE_GOAL.toLocaleString()}</span>
-            </span>
-          </div>
-          <div className="h-2 bg-void rounded-full overflow-hidden mb-5 relative">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.min(100, revenuePct)}%` }}
-              transition={{ delay: 0.4, duration: 1, ease: 'easeOut' }}
-              className="h-full rounded-full bg-gradient-to-r from-accent-gold/60 via-accent-gold to-accent-green"
-              style={{ boxShadow: '0 0 8px rgba(255,215,0,0.4)' }}
-            />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {CLIENT_ORDER.map((c: ClientName) => {
-              const cfg = CLIENT_CONFIG[c]
-              const out = outputs.find(o => o.client === c)
-              const received = out?.revenue_status === 'received'
-              const inProg = out?.revenue_status === 'in_progress'
-              return (
-                <div key={c} className="flex items-center gap-2 min-w-0">
-                  <div
-                    className={`w-2 h-2 rounded-full shrink-0 ${received ? '' : inProg ? 'animate-pulse' : 'opacity-40'}`}
-                    style={{ backgroundColor: cfg.color, boxShadow: received ? `0 0 8px ${cfg.color}` : undefined }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-body text-[13px] text-ink-primary truncate">{cfg.label}</p>
-                    <p className="font-mono text-[12px] text-ink-muted">
-                      {received ? '✓ 已收' : inProg ? '進行中' : '待處理'} · NT${(cfg.revenue / 1000).toFixed(0)}K
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </motion.section>
-
       <TwoPersonWidget />
 
       {/* ── Nav Tiles ── */}
@@ -434,38 +377,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Recent Inspirations ── */}
-      {latestInsps.length > 0 && (
-        <motion.section {...fadeUp(0.52)}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-sm tracking-[0.2em] text-ink-primary uppercase flex items-center gap-2">
-              <Sparkles size={13} className="text-accent-gold" />
-              Latest Sparks
-            </h2>
-            <Link
-              href="/learn"
-              className="font-display text-[12px] tracking-widest text-ink-muted hover:text-accent-blue transition-colors"
-            >
-              ALL →
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {latestInsps.map(insp => (
-              <div
-                key={insp.id}
-                className="bg-card border border-border-subtle rounded-xl p-4 card-hover"
-              >
-                <p className="font-body text-sm text-ink-primary leading-relaxed line-clamp-3">
-                  {insp.content}
-                </p>
-                <p className="font-mono text-[12px] text-ink-muted mt-2">
-                  {new Date(insp.created_at).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}
-                </p>
-              </div>
-            ))}
-          </div>
-        </motion.section>
-      )}
     </div>
   )
 }
