@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Zap, Briefcase, Calendar, Brain, Settings, Users } from 'lucide-react'
+import { Home, Zap, Briefcase, Calendar, Brain, Settings, Users, Command } from 'lucide-react'
 import AccountMenu from './AccountMenu'
 
 const navItems = [
@@ -63,6 +63,38 @@ export default function Sidebar() {
           <NavItem key={path} icon={Icon} path={path} label={label} active={pathname === path} />
         ))}
       </nav>
+
+      {/* Command Palette trigger */}
+      <button
+        type="button"
+        title="Command (⌘K)"
+        onClick={() => window.dispatchEvent(new Event('cmdk:open'))}
+        className="
+          mx-2 mb-2 flex items-center gap-3 px-3 py-2 rounded-lg whitespace-nowrap
+          text-ink-muted hover:text-accent-blue hover:bg-accent-blue/8
+          transition-colors duration-150 btn-press
+        "
+      >
+        <Command size={16} className="shrink-0" strokeWidth={2} />
+        <span className="
+          flex-1 font-display text-[11px] tracking-[0.18em] font-semibold text-left
+          overflow-hidden whitespace-nowrap
+          max-w-0 group-hover:max-w-[140px]
+          opacity-0 group-hover:opacity-100
+          transition-all duration-200 ease-out
+        ">
+          COMMAND
+        </span>
+        <kbd className="
+          font-mono text-[9px] px-1 py-px rounded border border-border-subtle bg-elevated
+          overflow-hidden whitespace-nowrap shrink-0
+          max-w-0 group-hover:max-w-[40px]
+          opacity-0 group-hover:opacity-100
+          transition-all duration-200 ease-out
+        ">
+          ⌘K
+        </kbd>
+      </button>
 
       {/* Account */}
       <AccountMenu />
