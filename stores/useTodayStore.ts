@@ -150,6 +150,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
       owner_name: t.user_id && t.user_id !== user.id ? profileMap.get(t.user_id) ?? null : null,
       assigned_to: t.assigned_to ?? null,
       assignee_name: t.assigned_to ? (t.assigned_to === user.id ? '我' : profileMap.get(t.assigned_to) ?? null) : null,
+      project_id: t.project_id ?? null,
       created_at: t.created_at,
     }))
 
@@ -226,6 +227,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
         sort_order,
         is_shared: isShared,
         assigned_to: assignedTo,
+        project_id: task.project_id ?? null,
       })
       .select()
       .single()
@@ -250,6 +252,7 @@ export const useTodayStore = create<TodayStore>((set, get) => ({
       owner_name: null,
       assigned_to: data.assigned_to ?? null,
       assignee_name: assigneeName,
+      project_id: data.project_id ?? null,
       created_at: data.created_at,
     }
     set({ tasks: [...tasks, newTask] })

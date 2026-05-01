@@ -1,10 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Users, UserCheck, ChevronDown } from 'lucide-react'
+import { Plus, Trash2, Users, UserCheck, ChevronDown, Folder } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { useClientStore, CLIENT_CONFIG, CLIENT_ORDER } from '@/stores/useClientStore'
+import { useProjectStore } from '@/stores/useProjectStore'
 import { Task, ClientName } from '@/types'
 import { completionQuotes } from '@/lib/quotes'
 
@@ -99,6 +100,7 @@ function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
           {CLIENT_CONFIG[task.client].label}
         </span>
       )}
+      {task.project_id && <ProjectChip projectId={task.project_id} />}
       {task.target_count && !task.completed && (
         <span className="shrink-0 text-[11px] font-mono text-ink-muted">×{task.target_count}</span>
       )}
@@ -110,6 +112,22 @@ function TaskRow({ task, showDelete }: { task: Task; showDelete?: boolean }) {
         </button>
       )}
     </div>
+  )
+}
+
+/* ── Project chip ── */
+function ProjectChip({ projectId }: { projectId: string }) {
+  const project = useProjectStore(s => s.projects.find(p => p.id === projectId))
+  if (!project) return null
+  return (
+    <span
+      className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-display tracking-wider"
+      style={{ backgroundColor: `${project.color}26`, color: project.color }}
+      title={`專案：${project.name}`}
+    >
+      <Folder size={10} />
+      <span className="text-[10px] max-w-[80px] truncate">{project.name}</span>
+    </span>
   )
 }
 
@@ -140,28 +158,53 @@ function SectionHeader({
 }
 
 /* ── CLIENT COLUMN ── */
-function ClientColumn() {
+function ClientColumn({ projectFilter }: { projectFilter: string | null }) {
   const allTasks = useTodayStore(s => s.tasks)
-  const tasks = allTasks.filter(t => t.category === 'client')
+  const tasks = allTasks.filter(t =>
+    t.category === 'client' && (!projectFilter || t.project_id === projectFilter)
+  )
   const addTask = useTodayStore(s => s.addTask)
   const todayStr = useTodayStore(s => s.todayStr)
   const partnerId = useTodayStore(s => s.partnerId)
   const partnerName = useTodayStore(s => s.partnerName)
   const clientsLoaded = useClientStore(s => s.loaded)
+  const clients = useClientStore(s => s.clients)
+  const projects = useProjectStore(s => s.projects)
+  const loadProjects = useProjectStore(s => s.loadAll)
   const [adding, setAdding] = useState(false)
   const [input, setInput] = useState('')
   const [client, setClient] = useState<ClientName>('')
+  const [projectId, setProjectId] = useState<string>('')
   const [shared, setShared] = useState(false)
   const [assignPartner, setAssignPartner] = useState(false)
   const [open, setOpen] = useState(true)
+
+  useEffect(() => { loadProjects() }, [loadProjects])
+
+  const chosenClientKey = client || CLIENT_ORDER[0]
+  const chosenClient = useMemo(
+    () => clients.find(c => c.key === chosenClientKey),
+    [clients, chosenClientKey]
+  )
+  const projectOptions = useMemo(
+    () => projects.filter(p => p.status === 'active' && (!chosenClient || !p.client_id || p.client_id === chosenClient.id)),
+    [projects, chosenClient]
+  )
 
   function handleAdd() {
     if (!input.trim()) return
     const chosen = client || CLIENT_ORDER[0]
     if (!chosen) return
     const assignedTo = shared && assignPartner && partnerId ? partnerId : null
-    addTask({ date: todayStr, category: 'client', client: chosen, content: input.trim(), completed: false }, shared, assignedTo)
-    setInput(''); setShared(false); setAssignPartner(false); setAdding(false)
+    addTask({
+      date: todayStr,
+      category: 'client',
+      client: chosen,
+      content: input.trim(),
+      completed: false,
+      project_id: projectId || null,
+    }, shared, assignedTo)
+    setInput(''); setShared(false); setAssignPartner(false); setProjectId(''); setAdding(false)
   }
 
   return (
@@ -193,7 +236,7 @@ function ClientColumn() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }} className="overflow-hidden"
             >
-              <div className="flex gap-2 mt-2 mb-2">
+              <div className="flex gap-2 mt-2 mb-2 flex-wrap">
                 <select value={client || CLIENT_ORDER[0] || ''} onChange={e => setClient(e.target.value as ClientName)}
                   disabled={!clientsLoaded || CLIENT_ORDER.length === 0}
                   className="bg-elevated border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary font-body outline-none">
@@ -201,10 +244,23 @@ function ClientColumn() {
                     <option key={k} value={k}>{CLIENT_CONFIG[k]?.label ?? k}</option>
                   ))}
                 </select>
+                {projectOptions.length > 0 && (
+                  <select
+                    value={projectId}
+                    onChange={e => setProjectId(e.target.value)}
+                    className="bg-elevated border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary font-body outline-none max-w-[140px]"
+                    title="關聯專案（跨日標籤）"
+                  >
+                    <option value="">無專案</option>
+                    {projectOptions.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                )}
                 <input value={input} onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setAdding(false) }}
                   placeholder="任務內容..." autoFocus
-                  className="flex-1 bg-elevated border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary outline-none placeholder:text-ink-muted font-body"
+                  className="flex-1 min-w-[140px] bg-elevated border border-border-subtle rounded px-2 py-1 text-xs text-ink-primary outline-none placeholder:text-ink-muted font-body"
                 />
               </div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -253,9 +309,11 @@ function ClientColumn() {
 }
 
 /* ── SOCIAL COLUMN ── */
-function SocialColumn() {
+function SocialColumn({ projectFilter }: { projectFilter: string | null }) {
   const allTasks = useTodayStore(s => s.tasks)
-  const tasks = allTasks.filter(t => t.category === 'social')
+  const tasks = allTasks.filter(t =>
+    t.category === 'social' && (!projectFilter || t.project_id === projectFilter)
+  )
   const [open, setOpen] = useState(true)
 
   return (
@@ -289,9 +347,11 @@ function SocialColumn() {
 }
 
 /* ── GROWTH COLUMN ── */
-function GrowthColumn() {
+function GrowthColumn({ projectFilter }: { projectFilter: string | null }) {
   const allTasks = useTodayStore(s => s.tasks)
-  const tasks = allTasks.filter(t => t.category === 'growth')
+  const tasks = allTasks.filter(t =>
+    t.category === 'growth' && (!projectFilter || t.project_id === projectFilter)
+  )
   const addTask = useTodayStore(s => s.addTask)
   const todayStr = useTodayStore(s => s.todayStr)
   const partnerId = useTodayStore(s => s.partnerId)
@@ -380,8 +440,67 @@ function GrowthColumn() {
   )
 }
 
+/* ── PROJECT FILTER STRIP ── */
+function ProjectFilterStrip({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
+  const projects = useProjectStore(s => s.projects)
+  const tasks = useTodayStore(s => s.tasks)
+  const loadProjects = useProjectStore(s => s.loadAll)
+
+  useEffect(() => { loadProjects() }, [loadProjects])
+
+  const usedIds = useMemo(() => {
+    const set = new Set<string>()
+    for (const t of tasks) if (t.project_id) set.add(t.project_id)
+    return set
+  }, [tasks])
+
+  const visible = useMemo(
+    () => projects.filter(p => p.status === 'active' || usedIds.has(p.id)),
+    [projects, usedIds]
+  )
+  if (visible.length === 0) return null
+
+  return (
+    <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
+      <Folder size={11} className="text-ink-muted shrink-0" />
+      <button
+        onClick={() => onChange(null)}
+        className={`px-2.5 py-1 rounded-full text-[11px] font-display tracking-wider border transition-all shrink-0 ${
+          value === null
+            ? 'bg-accent-blue/15 text-accent-blue border-accent-blue/40'
+            : 'border-border-subtle text-ink-muted hover:text-ink-secondary'
+        }`}
+      >
+        全部
+      </button>
+      {visible.map(p => {
+        const active = value === p.id
+        const count = tasks.filter(t => t.project_id === p.id).length
+        return (
+          <button
+            key={p.id}
+            onClick={() => onChange(active ? null : p.id)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-display tracking-wider border transition-all shrink-0 ${
+              active ? '' : 'border-border-subtle text-ink-muted hover:text-ink-secondary'
+            }`}
+            style={active ? {
+              backgroundColor: `${p.color}1f`, color: p.color, borderColor: `${p.color}55`,
+            } : undefined}
+          >
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
+            <span className="max-w-[120px] truncate">{p.name}</span>
+            {count > 0 && <span className="font-mono text-[10px] opacity-70">{count}</span>}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 /* ── MAIN ── */
 export default function TaskMatrix({ combatMode = false }: { combatMode?: boolean }) {
+  const [projectFilter, setProjectFilter] = useState<string | null>(null)
+
   return (
     <section>
       <div className="mb-3 flex items-center gap-3">
@@ -396,8 +515,9 @@ export default function TaskMatrix({ combatMode = false }: { combatMode?: boolea
           </motion.span>
         )}
       </div>
+      <ProjectFilterStrip value={projectFilter} onChange={setProjectFilter} />
       <div className="space-y-3">
-        <ClientColumn />
+        <ClientColumn projectFilter={projectFilter} />
         <AnimatePresence>
           {!combatMode && (
             <>
@@ -407,7 +527,7 @@ export default function TaskMatrix({ combatMode = false }: { combatMode?: boolea
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
               >
-                <SocialColumn />
+                <SocialColumn projectFilter={projectFilter} />
               </motion.div>
               <motion.div
                 key="growth"
@@ -415,7 +535,7 @@ export default function TaskMatrix({ combatMode = false }: { combatMode?: boolea
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
               >
-                <GrowthColumn />
+                <GrowthColumn projectFilter={projectFilter} />
               </motion.div>
             </>
           )}

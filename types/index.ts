@@ -4,6 +4,19 @@ export type ClientName = string // user-scoped logical key; default seeded: 'bit
 export type RevenueStatus = 'pending' | 'in_progress' | 'received'
 export type TaskStatus = 'not_started' | 'in_progress' | 'done'
 export type TripDuration = 'full' | 'half'
+export type ProjectStatus = 'active' | 'done' | 'archived'
+
+export interface Project {
+  id: string
+  user_id: string
+  name: string
+  client_id: string | null
+  color: string
+  due_date: string | null
+  status: ProjectStatus
+  sort_order: number
+  created_at: string
+}
 
 export interface Client {
   id: string
@@ -32,6 +45,7 @@ export interface Task {
   owner_name?: string | null
   assigned_to?: string | null
   assignee_name?: string | null
+  project_id?: string | null
   created_at: string
 }
 

@@ -4,11 +4,12 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Command, Zap, Calendar, Briefcase, Brain, Settings,
-  Plus, Sparkles, MessageSquare, ArrowRight, CornerDownLeft,
+  Plus, Sparkles, MessageSquare, ArrowRight, CornerDownLeft, Folder,
 } from 'lucide-react'
 import { useTodayStore } from '@/stores/useTodayStore'
 import { useLearnStore } from '@/stores/useLearnStore'
-import { useClientStore, CLIENT_ORDER, CLIENT_CONFIG } from '@/stores/useClientStore'
+import { useClientStore, CLIENT_ORDER, CLIENT_CONFIG, getClientIdByKey } from '@/stores/useClientStore'
+import { useProjectStore } from '@/stores/useProjectStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { createClient as createSupabase, getSessionUser } from '@/lib/supabase/client'
 import { getTodayString } from '@/lib/utils'
@@ -56,10 +57,13 @@ export default function CommandPalette() {
   const inspirations = useLearnStore(s => s.insps)
   const clientsLoaded = useClientStore(s => s.loaded)
   const loadClients = useClientStore(s => s.loadAll)
+  const projects = useProjectStore(s => s.projects)
+  const loadProjects = useProjectStore(s => s.loadAll)
 
   /* category / client for task mode */
   const [taskCategory, setTaskCategory] = useState<TaskCategory>('client')
   const [taskClient, setTaskClient] = useState<ClientName | ''>('')
+  const [taskProjectId, setTaskProjectId] = useState<string>('')
 
   /* ── global hotkey + custom event ── */
   useEffect(() => {
@@ -93,8 +97,9 @@ export default function CommandPalette() {
       return
     }
     if (!clientsLoaded) loadClients()
+    loadProjects()
     setTimeout(() => inputRef.current?.focus(), 30)
-  }, [open, clientsLoaded, loadClients])
+  }, [open, clientsLoaded, loadClients, loadProjects])
 
   /* default client when palette opens task mode */
   useEffect(() => {
@@ -152,7 +157,9 @@ export default function CommandPalette() {
         client: taskCategory === 'client' ? (taskClient || undefined) : undefined,
         content,
         completed: false,
+        project_id: taskCategory === 'client' && taskProjectId ? taskProjectId : null,
       })
+      setTaskProjectId('')
       addToast({ type: 'success', message: '任務已加到今日' })
       setOpen(false)
     } finally {
@@ -356,7 +363,7 @@ export default function CommandPalette() {
                       return (
                         <button
                           key={k}
-                          onClick={() => setTaskClient(k)}
+                          onClick={() => { setTaskClient(k); setTaskProjectId('') }}
                           className={`flex items-center gap-1.5 px-2 py-1 rounded text-[11px] font-display tracking-wider transition-all ${
                             active ? 'border' : 'bg-elevated text-ink-muted hover:text-ink-primary border border-transparent'
                           }`}
@@ -371,6 +378,44 @@ export default function CommandPalette() {
                     })}
                   </div>
                 )}
+                {taskCategory === 'client' && (() => {
+                  const clientId = getClientIdByKey(taskClient || null)
+                  const opts = projects.filter(p => p.status === 'active' && (!p.client_id || p.client_id === clientId))
+                  if (opts.length === 0) return null
+                  return (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-display text-[10px] tracking-widest text-ink-muted flex items-center gap-1">
+                        <Folder size={10} /> 專案
+                      </span>
+                      <button
+                        onClick={() => setTaskProjectId('')}
+                        className={`px-2 py-1 rounded text-[11px] font-display tracking-wider transition-all border ${
+                          taskProjectId === '' ? 'bg-elevated text-ink-primary border-border-active' : 'bg-elevated/50 text-ink-muted border-transparent hover:text-ink-primary'
+                        }`}
+                      >
+                        無
+                      </button>
+                      {opts.map(p => {
+                        const active = taskProjectId === p.id
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => setTaskProjectId(p.id)}
+                            className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-display tracking-wider transition-all ${
+                              active ? 'border' : 'bg-elevated text-ink-muted hover:text-ink-primary border border-transparent'
+                            }`}
+                            style={active ? {
+                              backgroundColor: `${p.color}1f`, color: p.color, borderColor: `${p.color}55`,
+                            } : undefined}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: p.color }} />
+                            <span className="max-w-[100px] truncate">{p.name}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
                 <ActionFooter
                   hint="Enter 送出 · Esc 返回"
                   label={submitting ? '送出中...' : '加入今日'}

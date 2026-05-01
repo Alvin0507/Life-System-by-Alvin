@@ -1,12 +1,13 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence, type MotionProps } from 'framer-motion'
-import { Video, DollarSign, Plane, AlarmClock } from 'lucide-react'
+import { Video, DollarSign, Plane, AlarmClock, Folder } from 'lucide-react'
 import { useClientStore } from '@/stores/useClientStore'
 import RevenueBoard from '@/components/clients/RevenueBoard'
 import OutputTracker from '@/components/clients/OutputTracker'
 import FieldTrips from '@/components/clients/FieldTrips'
 import DeadlineAlert from '@/components/clients/DeadlineAlert'
+import Projects from '@/components/clients/Projects'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 
 const fadeUp = (delay: number): MotionProps => ({
@@ -15,11 +16,12 @@ const fadeUp = (delay: number): MotionProps => ({
   transition: { delay, duration: 0.4, ease: 'easeOut' },
 })
 
-type TabKey = 'output' | 'revenue' | 'trips' | 'deadlines'
+type TabKey = 'output' | 'revenue' | 'trips' | 'deadlines' | 'projects'
 
 const TABS: { key: TabKey; label: string; icon: typeof Video; accent: string }[] = [
   { key: 'output',    label: 'OUTPUT',    icon: Video,      accent: '#00d4ff' },
   { key: 'revenue',   label: 'REVENUE',   icon: DollarSign, accent: '#00ff88' },
+  { key: 'projects',  label: 'PROJECTS',  icon: Folder,     accent: '#a855f7' },
   { key: 'trips',     label: 'TRIPS',     icon: Plane,      accent: '#ffd700' },
   { key: 'deadlines', label: 'DEADLINES', icon: AlarmClock, accent: '#ff3860' },
 ]
@@ -95,6 +97,7 @@ export default function ClientsPage() {
         >
           {tab === 'output' && <OutputTracker />}
           {tab === 'revenue' && <RevenueBoard />}
+          {tab === 'projects' && <Projects />}
           {tab === 'trips' && <FieldTrips />}
           {tab === 'deadlines' && <DeadlineAlert />}
         </motion.div>

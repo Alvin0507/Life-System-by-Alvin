@@ -166,13 +166,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "deadlines_shared_project_id_fkey"
-            columns: ["shared_project_id"]
-            isOneToOne: false
-            referencedRelation: "shared_projects"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "deadlines_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -218,13 +211,6 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "field_trips_shared_project_id_fkey"
-            columns: ["shared_project_id"]
-            isOneToOne: false
-            referencedRelation: "shared_projects"
             referencedColumns: ["id"]
           },
           {
@@ -532,6 +518,50 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          client_id: string | null
+          color: string
+          created_at: string
+          due_date: string | null
+          id: string
+          name: string
+          sort_order: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          color?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          color?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_notes: {
         Row: {
           author_id: string
@@ -562,83 +592,6 @@ export type Database = {
         }
         Relationships: []
       }
-      shared_project_members: {
-        Row: {
-          added_at: string
-          project_id: string
-          role: string
-          user_id: string
-        }
-        Insert: {
-          added_at?: string
-          project_id: string
-          role?: string
-          user_id: string
-        }
-        Update: {
-          added_at?: string
-          project_id?: string
-          role?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "shared_project_members_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "shared_projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "shared_project_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      shared_projects: {
-        Row: {
-          color: string
-          created_at: string
-          edit_target: number
-          id: string
-          label: string
-          owner_id: string
-          revenue: number
-          script_target: number
-        }
-        Insert: {
-          color?: string
-          created_at?: string
-          edit_target?: number
-          id?: string
-          label: string
-          owner_id: string
-          revenue?: number
-          script_target?: number
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          edit_target?: number
-          id?: string
-          label?: string
-          owner_id?: string
-          revenue?: number
-          script_target?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "shared_projects_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tasks: {
         Row: {
           assigned_to: string | null
@@ -651,7 +604,7 @@ export type Database = {
           date: string
           id: string
           is_shared: boolean
-          shared_project_id: string | null
+          project_id: string | null
           sort_order: number
           target_count: number | null
           updated_at: string
@@ -668,7 +621,7 @@ export type Database = {
           date: string
           id?: string
           is_shared?: boolean
-          shared_project_id?: string | null
+          project_id?: string | null
           sort_order?: number
           target_count?: number | null
           updated_at?: string
@@ -685,7 +638,7 @@ export type Database = {
           date?: string
           id?: string
           is_shared?: boolean
-          shared_project_id?: string | null
+          project_id?: string | null
           sort_order?: number
           target_count?: number | null
           updated_at?: string
@@ -700,10 +653,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "tasks_shared_project_id_fkey"
-            columns: ["shared_project_id"]
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: "shared_projects"
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
